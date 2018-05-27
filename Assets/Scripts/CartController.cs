@@ -70,11 +70,9 @@ public class CartController : MonoBehaviour {
 
     private void HandleCartControls() {
         if (cartLastLookedAt != null) {
-            isFallenOver = (cartLastLookedAt.localEulerAngles.x >= 45 || cartLastLookedAt.localEulerAngles.x <= -45) || (cartLastLookedAt.localEulerAngles.z >= 45 || cartLastLookedAt.localEulerAngles.z <= -45);
+            isFallenOver = (cartLastLookedAt.eulerAngles.x >= 45 || cartLastLookedAt.eulerAngles.x <= -45) || (cartLastLookedAt.eulerAngles.z >= 45 || cartLastLookedAt.eulerAngles.z <= -45);
             if (isLookingAtCart)
                 isLookingAtHandlebars = hitCart.collider.CompareTag("Handlebar");
-            else
-                isLookingAtHandlebars = false;
         } else {
             isFallenOver = false;
             isLookingAtHandlebars = false;
@@ -95,7 +93,7 @@ public class CartController : MonoBehaviour {
         cartInHands = cartLastLookedAt;
         cartInHandsRigidBody = cartInHands.GetComponentInChildren<Rigidbody>();
         isHoldingCart = true;
-
+        print(!liftingCart + " && " + (isFallenOver + " || " + !isLookingAtHandlebars));
         if ( !liftingCart && (isFallenOver || !isLookingAtHandlebars) ) {
             // Press R to rotate X and Z back to 0 deg
             PickUpCart();
