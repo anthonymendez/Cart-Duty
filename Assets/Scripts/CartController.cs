@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -20,13 +21,17 @@ public class CartController : MonoBehaviour {
     bool isHoldingCart;
     bool isFallenOver;
     bool isLookingAtHandlebars;
-    Cart cartInHands;
+    bool liftingCart;
+    Transform cartInHands;
+    Rigidbody cartInHandsRigidBody;
     Transform cartLastLookedAt;
+    FPSPlayerMovement playerBodyFPS;
 
     // Use this for initialization
     void Start () {
         mainCamera = FindObjectOfType<Camera>();
         screenCenter = new Vector3(0.5f, 0.5f, 0f);
+        playerBodyFPS = playerBody.GetComponentInParent<FPSPlayerMovement>();
     }
 	
 	// Update is called once per frame
@@ -34,11 +39,16 @@ public class CartController : MonoBehaviour {
         ProcessGrabCart();
 	}
 
+    void FixedUpdate() {
+        HandleRaycasting();
+        HandleCartControls();
+        ApplyCartForces();
+        ClampCartVelocity();
+    }
+
     private void ProcessGrabCart() {
         grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
         releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
-
-        HandleRaycasting();
     }
 
     private void HandleRaycasting() {
@@ -54,8 +64,6 @@ public class CartController : MonoBehaviour {
         } else if (cartLastLookedAt != null) {
             cartLastLookedAt.GetComponent<Cart>().DeactivateOutline();
         }
-
-        HandleCartControls();
     }
 
     private void HandleCartControls() {
@@ -71,32 +79,90 @@ public class CartController : MonoBehaviour {
         }
 
         if (isLookingAtCart) {
-            if (grabButtonDown) {
-                cartInHands = cartLastLookedAt.GetComponent<Cart>();
-                isHoldingCart = true;
-
-                if (isFallenOver) {
-                    // Press R to rotate X and Z back to 0 deg
-                } else if (isLookingAtHandlebars) {
-                    // Child the object for now
-                    if (cartLastLookedAt.parent == null) {
-                        cartLastLookedAt.parent = playerBody;
-                        print("Grabbing Cart");
-                        cartLastLookedAt.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
-                        cartLastLookedAt.localRotation = Quaternion.Euler(new Vector3(0f, rotateCartAround, 0f));
-                    }
-                }
-
-                cartLastLookedAt.GetComponent<Cart>().DeactivateOutline();
+            if (grabButtonDown && !isHoldingCart) {
+                HandleCartGrabbing();
             }
-            
         }
 
-        if (releaseButtonDown) {
-            isHoldingCart = false;
-            if (cartLastLookedAt.parent != null) {
-                cartLastLookedAt.parent = null;
-                print("Releasing cart");
+        if (isHoldingCart && releaseButtonDown) {
+            ReleaseCart();
+        }
+    }
+
+    private void HandleCartGrabbing() {
+        cartInHands = cartLastLookedAt;
+        cartInHandsRigidBody = cartInHands.GetComponentInChildren<Rigidbody>();
+        isHoldingCart = true;
+
+        if ( !liftingCart && (isFallenOver || !isLookingAtHandlebars) ) {
+            // Press R to rotate X and Z back to 0 deg
+            PickUpCart();
+        } else if (isLookingAtHandlebars) {
+            GrabCart();
+        }
+
+        cartInHands.GetComponent<Cart>().DeactivateOutline();
+    }
+
+    private void PickUpCart() {
+        print("Lifting Cart");
+        liftingCart = true;
+        cartInHands.parent = transform;
+        AddCartMassToPlayer();
+    }
+
+    private void GrabCart() {
+        print("Grabbing Cart");
+        cartInHands.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
+        cartInHands.rotation = Quaternion.Euler(
+            playerBody.eulerAngles.x,
+            playerBody.eulerAngles.y + rotateCartAround,
+            playerBody.eulerAngles.z
+            );
+    }
+
+    private void ReleaseCart() {
+        isHoldingCart = false;
+        if (liftingCart) {
+            liftingCart = false;
+            RemoveCartMassFromPlayer();
+        }
+        
+        cartInHands.parent = null;
+        cartInHands = null;
+        cartInHandsRigidBody = null;
+        print("Releasing cart");
+    }
+
+    private void AddCartMassToPlayer() {
+        Rigidbody playerRigidBody = playerBody.GetComponent<Rigidbody>();
+        cartInHandsRigidBody = cartInHands.GetComponent<Rigidbody>();
+        playerRigidBody.mass += cartInHandsRigidBody.mass;
+    }
+
+    private void RemoveCartMassFromPlayer() {
+        Rigidbody playerRigidBody = playerBody.GetComponent<Rigidbody>();
+        cartInHandsRigidBody = cartInHands.GetComponent<Rigidbody>();
+        playerRigidBody.mass -= cartInHandsRigidBody.mass;
+    }
+
+    private void ApplyCartForces() {
+        if(cartInHandsRigidBody != null) {
+            Vector3 cartForceToApply = playerBodyFPS.GetForceToApply();
+            cartInHandsRigidBody.AddRelativeForce(new Vector3(
+                cartForceToApply.x,
+                cartForceToApply.y,
+                cartForceToApply.z
+                ));
+        }
+    }
+
+    private void ClampCartVelocity() {
+        if (cartInHandsRigidBody != null) {
+            float cartVelocityMagnitude = cartInHandsRigidBody.velocity.magnitude;
+
+            if (cartVelocityMagnitude > playerBodyFPS.GetPlayerVelocityLimit()) {
+                cartInHandsRigidBody.velocity = Vector3.ClampMagnitude(cartInHandsRigidBody.velocity, playerBodyFPS.GetPlayerVelocityLimit());
             }
         }
     }

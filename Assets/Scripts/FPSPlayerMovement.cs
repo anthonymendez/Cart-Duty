@@ -16,9 +16,17 @@ public class FPSPlayerMovement : MonoBehaviour {
     Camera mainCamera;
     Rigidbody playerRigidBody;
 
-    Vector3 forceToApply;
+    private Vector3 forceToApply;
 
     Vector3 upAndDownRotation;
+
+    public Vector3 GetForceToApply() {
+        return forceToApply;
+    }
+
+    public float GetPlayerVelocityLimit() {
+        return playerVelocityLimit;
+    }
 
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
