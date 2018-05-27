@@ -18,6 +18,8 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     Vector3 forceToApply;
 
+    Vector3 upAndDownRotation;
+
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -44,7 +46,8 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     // Apply Camera movement here
     void LateUpdate() {
-
+        ApplyUpAndDownCameraRotation();
+        ClampLookUpAndDownRotation();
     }
 
     private void ProcessTranslation() {
@@ -73,7 +76,6 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     private void ProcessRotation() {
         ProcessLookUpAndDownRotation();
-        ClampLookUpAndDownRotation();
         ProcessLeftAndRightRotation();
     }
 
@@ -94,8 +96,11 @@ public class FPSPlayerMovement : MonoBehaviour {
         }
 
         xOffset *= Time.deltaTime;
-        Vector3 offsetRotation = new Vector3(xOffset, 0f, 0f);
-        mainCamera.transform.Rotate(offsetRotation);
+        upAndDownRotation = new Vector3(xOffset, 0f, 0f);
+    }
+    
+    private void ApplyUpAndDownCameraRotation() {
+        mainCamera.transform.Rotate(upAndDownRotation);
     }
 
     private void ClampLookUpAndDownRotation() {
