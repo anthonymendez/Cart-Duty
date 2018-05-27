@@ -22,6 +22,7 @@ public class CartController : MonoBehaviour {
     bool isFallenOver;
     bool isLookingAtHandlebars;
     bool liftingCart;
+    float rotateCartAroundYAxis;
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
     Transform cartLastLookedAt;
@@ -36,7 +37,7 @@ public class CartController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        ProcessGrabCart();
+        ProcessCartControls();
 	}
 
     void FixedUpdate() {
@@ -46,9 +47,10 @@ public class CartController : MonoBehaviour {
         ClampCartVelocity();
     }
 
-    private void ProcessGrabCart() {
+    private void ProcessCartControls() {
         grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
         releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
+        rotateCartAroundYAxis = CrossPlatformInputManager.GetAxisRaw("Mouse ScrollWheel");
     }
 
     private void HandleRaycasting() {
@@ -107,7 +109,8 @@ public class CartController : MonoBehaviour {
     private void PickUpCart() {
         print("Lifting Cart");
         liftingCart = true;
-        cartInHands.parent = transform;
+        cartInHands.parent = playerBody.transform;
+        cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.25f);
         AddCartMassToPlayer();
     }
 
@@ -148,12 +151,17 @@ public class CartController : MonoBehaviour {
 
     private void ApplyCartForces() {
         if(cartInHandsRigidBody != null) {
-            Vector3 cartForceToApply = playerBodyFPS.GetForceToApply();
-            cartInHandsRigidBody.AddRelativeForce(new Vector3(
-                cartForceToApply.x,
-                cartForceToApply.y,
-                cartForceToApply.z
-                ));
+            float cartForceToApply = playerBodyFPS.GetForceToApply().magnitude;
+            Vector3 forceScalar = cartInHands.forward;
+            cartInHandsRigidBody.AddRelativeForce(forceScalar * cartForceToApply);
+
+            if (liftingCart) {
+                cartInHands.position = (playerBody.position + playerLookDirection.direction + mainCamera.transform.forward);
+                cartInHandsRigidBody.angularVelocity = Vector3.zero;
+                cartInHandsRigidBody.velocity = Vector3.zero;
+                cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
+                cartInHands.Rotate(0f, rotateCartAroundYAxis * 20f, 0f);
+            }
         }
     }
 
