@@ -9,8 +9,22 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     [Range(1f, 1000f)][SerializeField] float speed = 20f;
     [Range(1f, 100f)] [SerializeField] float sensitivity = 20f;
+    [SerializeField] Material outline;
 
     Camera mainCamera;
+    Rigidbody playerRigidBody;
+    bool grabButtonDown, releaseButtonDown;
+    Vector3 screenCenter;
+    Ray playerLookDirection;
+    RaycastHit hitCart;
+    [Tooltip("In Meters")][SerializeField] float maxDistanceGrab = 2f;
+    [Tooltip("Tag")][SerializeField] String cartLayerName = "Carts";
+    int layerMask;
+    bool isLookingAtCart;
+    bool isHoldingCart;
+    Cart cartInHands;
+    Transform cartLastLookedAt;
+    Rigidbody cartRigidBody;
 
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -19,6 +33,7 @@ public class FPSPlayerMovement : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         mainCamera = GetComponentInChildren<Camera>();
+        playerRigidBody = GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame
@@ -93,30 +108,47 @@ public class FPSPlayerMovement : MonoBehaviour {
     }
 
     private void ProcessGrabCart() {
-        bool grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
+        grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
+        releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
 
-        if (grabButtonDown) {
-            Vector3 screenCenter = new Vector3(0.5f, 0.5f, 0f);
-            Ray playerLookDirection = mainCamera.ViewportPointToRay(screenCenter);
-            RaycastHit hitHandlebar;
-            float maxDistanceGrab = 10f;
-            int layerMask = LayerMask.GetMask("Carts");
-            bool isLookingAtCart = Physics.Raycast(playerLookDirection, out hitHandlebar, maxDistanceGrab, layerMask);
+        HandleRaycasting();
+    }
 
-            Debug.DrawLine(playerLookDirection.origin, hitHandlebar.point);
+    private void HandleRaycasting() {
+        screenCenter = new Vector3(0.5f, 0.5f, 0f);
+        playerLookDirection = mainCamera.ViewportPointToRay(screenCenter);
+        maxDistanceGrab = 1f;
+        layerMask = LayerMask.GetMask(cartLayerName);
+        isLookingAtCart = Physics.Raycast(playerLookDirection, out hitCart, maxDistanceGrab, layerMask);
+        Debug.DrawLine(playerLookDirection.origin, hitCart.point);
 
-            if (isLookingAtCart) {
-                String cartTag = hitHandlebar.collider.transform.tag;
-
-                if (cartTag.Equals("CartBody") || cartTag.Equals("B2HB")) {
-                    // Flip over cart if rotation X or Z is >= or <= (+/-) 45 deg
-                    // Pick up cart to move but you'll be slower
-                    print("Grabbing Cart");
-                } else if(cartTag.Equals("Handlebar")) {
-                    print("Grabbing Handlebar");
-                }
-            }
+        if (isLookingAtCart) {
+            HandleCartControls();
+            cartLastLookedAt.GetComponent<Cart>().ActivateOutline();
+        } else {
+            if(cartLastLookedAt != null)
+                cartLastLookedAt.GetComponent<Cart>().DeactivateOutline();
         }
     }
 
+    private void HandleCartControls() {
+        cartLastLookedAt = hitCart.transform;
+        cartRigidBody = cartLastLookedAt.GetComponent<Rigidbody>();
+
+        bool isFallenOver = (cartLastLookedAt.localEulerAngles.x >= 45 || cartLastLookedAt.localEulerAngles.x <= -45) || (cartLastLookedAt.localEulerAngles.z >= 45 || cartLastLookedAt.localEulerAngles.z <= -45);
+        bool isLookingAtHandlebars = hitCart.collider.CompareTag("Handlebar");
+
+        if (grabButtonDown) {
+            cartInHands = cartLastLookedAt.GetComponent<Cart>();
+            isHoldingCart = true;
+
+            if (isFallenOver) {
+                // Press R to rotate X and Z back to 0 deg
+            } else if (isLookingAtHandlebars) {
+
+            }
+        } else if (releaseButtonDown) {
+            isHoldingCart = false;
+        }
+    }
 }
