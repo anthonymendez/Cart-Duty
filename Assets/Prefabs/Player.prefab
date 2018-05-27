@@ -302,7 +302,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c65ffdbb1d321d04a8b72ed09e459103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
-  sensitivity: 20
+  speed: 10
+  mouseSensitivity: 10
+  gamepadSensitivity: 100
+  gamepadDeadzone: 0.05
   playerBody: {fileID: 4599968846901436}
   playerHands: {fileID: 114877029317268686}
