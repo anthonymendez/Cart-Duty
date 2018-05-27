@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 public class FPSPlayerMovement : MonoBehaviour {
 
-    [Range(1f, 1000f)][SerializeField] float speed = 20f;
+    [Tooltip("In N")][SerializeField] float movementForce = 200f;
+    [SerializeField] float playerVelocityLimit = 10f;
     [Range(1f, 100f)] [SerializeField] float mouseSensitivity = 20f;
     [Range(1f, 1000f)] [SerializeField] float gamepadSensitivity = 100f;
     [Tooltip("Set the value the same as it is in the InputManager")][SerializeField] float gamepadDeadzone = 0.05f;
@@ -15,6 +16,8 @@ public class FPSPlayerMovement : MonoBehaviour {
     Camera mainCamera;
     Rigidbody playerRigidBody;
 
+    Vector3 forceToApply;
+
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -22,7 +25,9 @@ public class FPSPlayerMovement : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         mainCamera = FindObjectOfType<Camera>();
-        playerRigidBody = GetComponent<Rigidbody>();
+        playerRigidBody = GetComponentInChildren<Rigidbody>();
+
+        forceToApply = Vector3.zero;
     }
 	
 	// Update is called once per frame
@@ -31,20 +36,39 @@ public class FPSPlayerMovement : MonoBehaviour {
         ProcessRotation();
 	}
 
+    // Apply Physics here
+    void FixedUpdate() {
+        ApplyTranslationForce();
+        ClampVelocity();
+    }
+
+    // Apply Camera movement here
+    void LateUpdate() {
+
+    }
+
     private void ProcessTranslation() {
         // Get X and Y throw, factor in the speed and time since the last frame,
-        // and translate the Player
+        // and calculate the force to apply on player
         float xThrow = CrossPlatformInputManager.GetAxis("Horizontal");
-        float xOffset = xThrow * speed * Time.deltaTime;
+        float xOffset = xThrow * movementForce * Time.deltaTime;
 
         float zThrow = CrossPlatformInputManager.GetAxis("Vertical");
-        float zOffset = zThrow * speed * Time.deltaTime;
+        float zOffset = zThrow * movementForce * Time.deltaTime;
 
-        playerBody.Translate(
-            xOffset,
-            0f,
-            zOffset
-        );
+        forceToApply = new Vector3(xOffset, 0f, zOffset);
+    }
+
+    private void ApplyTranslationForce() {
+        playerRigidBody.AddRelativeForce(forceToApply);
+    }
+    
+    private void ClampVelocity() {
+        float playerVelocityMagnitude = playerRigidBody.velocity.magnitude;
+
+        if (playerVelocityMagnitude > playerVelocityLimit) {
+            playerRigidBody.velocity = Vector3.ClampMagnitude(playerRigidBody.velocity, playerVelocityLimit);
+        }
     }
 
     private void ProcessRotation() {
@@ -62,11 +86,9 @@ public class FPSPlayerMovement : MonoBehaviour {
         float xOffset = 0f;
         
         if (xRotationGamepadNormalized <= 1.0f && xRotationGamepadNormalized > gamepadDeadzone) {
-            print("Processing X Joystick");
             xProperRotation = xRotationGamepad;
             xOffset = xProperRotation * gamepadSensitivity;
         } else {
-            print("Processing X Mouse");
             xProperRotation = xRotationMouse;
             xOffset = xProperRotation * mouseSensitivity;
         }
@@ -103,11 +125,9 @@ public class FPSPlayerMovement : MonoBehaviour {
         float yOffset = 0f;
 
         if(yRotationGamepadNormalized <= 1.0f && yRotationGamepadNormalized > gamepadDeadzone) {
-            print("Processing Y Joystick");
             yProperRotation = yRotationGamepad;
             yOffset = yProperRotation * gamepadSensitivity;
         } else {
-            print("Processing Y Mouse");
             yProperRotation = yRotationMouse;
             yOffset = yProperRotation * mouseSensitivity;
         }
