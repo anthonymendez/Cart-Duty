@@ -106,7 +106,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         xOffset *= Time.deltaTime;
         upAndDownRotation = new Vector3(xOffset, 0f, 0f);
     }
-    
+
     private void ApplyUpAndDownCameraRotation() {
         mainCamera.transform.Rotate(upAndDownRotation);
     }
@@ -117,16 +117,17 @@ public class FPSPlayerMovement : MonoBehaviour {
         // When rotation goes below 0, it wraps around to 360f
         float xRotRaw = mainCamera.transform.localEulerAngles.x;
         float xRotFix;
-        if (xRotRaw <= 90)
+        if (xRotRaw <= 90) {
             xRotFix = Mathf.Clamp(xRotRaw, 0f, 90f);
-        else
+        } else {
             xRotFix = Mathf.Clamp(xRotRaw, 270f, 360f);
-
+        }
+        
         mainCamera.transform.localRotation = Quaternion.Euler(
             xRotFix,
             mainCamera.transform.localRotation.y,
             mainCamera.transform.localRotation.z
-            );
+        );
     }
 
     private void ProcessLeftAndRightRotation() {

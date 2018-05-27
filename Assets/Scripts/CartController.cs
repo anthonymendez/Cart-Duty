@@ -14,7 +14,7 @@ public class CartController : MonoBehaviour {
     Camera mainCamera;
     bool grabButtonDown, releaseButtonDown;
     Vector3 screenCenter;
-    Ray playerLookDirection;
+    Ray playerLookRay;
     RaycastHit hitCart;
     int layerMask;
     bool isLookingAtCart;
@@ -54,10 +54,10 @@ public class CartController : MonoBehaviour {
     }
 
     private void HandleRaycasting() {
-        playerLookDirection = mainCamera.ViewportPointToRay(screenCenter);
+        playerLookRay = mainCamera.ViewportPointToRay(screenCenter);
         layerMask = LayerMask.GetMask(cartLayerName);
-        isLookingAtCart = Physics.Raycast(playerLookDirection, out hitCart, maxDistanceGrab, layerMask);
-        Debug.DrawLine(playerLookDirection.origin, hitCart.point);
+        isLookingAtCart = Physics.Raycast(playerLookRay, out hitCart, maxDistanceGrab, layerMask);
+        Debug.DrawLine(playerLookRay.origin, hitCart.point);
 
         if (isLookingAtCart) {
             cartLastLookedAt = hitCart.transform;
@@ -121,7 +121,7 @@ public class CartController : MonoBehaviour {
             playerBody.eulerAngles.x,
             playerBody.eulerAngles.y + rotateCartAround,
             playerBody.eulerAngles.z
-            );
+        );
     }
 
     private void ReleaseCart() {
@@ -151,18 +151,27 @@ public class CartController : MonoBehaviour {
 
     private void ApplyCartForces() {
         if(cartInHandsRigidBody != null) {
-            float cartForceToApply = playerBodyFPS.GetForceToApply().magnitude;
-            Vector3 forceScalar = cartInHands.forward;
-            cartInHandsRigidBody.AddRelativeForce(forceScalar * cartForceToApply);
+            Vector3 cartForceToApply = playerBodyFPS.GetForceToApply();
+            Vector3 playerLookDirection = playerLookRay.direction;
+            Vector3 forceToApply = new Vector3(
+                cartForceToApply.x * playerLookDirection.x,
+                cartForceToApply.y * playerLookDirection.y,
+                cartForceToApply.z * playerLookDirection.z
+            );
+            cartInHandsRigidBody.AddRelativeForce(forceToApply);
 
             if (liftingCart) {
-                cartInHands.position = (playerBody.position + playerLookDirection.direction + mainCamera.transform.forward);
-                cartInHandsRigidBody.angularVelocity = Vector3.zero;
-                cartInHandsRigidBody.velocity = Vector3.zero;
-                cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
-                cartInHands.Rotate(0f, rotateCartAroundYAxis * 20f, 0f);
+                LiftCart();
             }
         }
+    }
+
+    private void LiftCart() {
+        cartInHands.position = (playerBody.position + playerLookRay.direction + mainCamera.transform.forward);
+        cartInHandsRigidBody.angularVelocity = Vector3.zero;
+        cartInHandsRigidBody.velocity = Vector3.zero;
+        cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
+        cartInHands.Rotate(0f, rotateCartAroundYAxis * 20f, 0f);
     }
 
     private void ClampCartVelocity() {
