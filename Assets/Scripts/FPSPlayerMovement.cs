@@ -6,7 +6,9 @@ using UnityStandardAssets.CrossPlatformInput;
 public class FPSPlayerMovement : MonoBehaviour {
 
     [Range(1f, 1000f)][SerializeField] float speed = 20f;
-    [Range(1f, 100f)] [SerializeField] float sensitivity = 20f;
+    [Range(1f, 100f)] [SerializeField] float mouseSensitivity = 20f;
+    [Range(1f, 1000f)] [SerializeField] float gamepadSensitivity = 100f;
+    [Tooltip("Set the value the same as it is in the InputManager")][SerializeField] float gamepadDeadzone = 0.05f;
     [SerializeField] Transform playerBody;
     [SerializeField] CartController playerHands;
 
@@ -53,14 +55,25 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     private void ProcessLookUpAndDownRotation() {
         // Move mainCamera X rot for up and down
-        float xRot = -CrossPlatformInputManager.GetAxisRaw("Mouse Y");
-        float xOffset = xRot * sensitivity * Time.deltaTime;
+        float xRotationMouse = -CrossPlatformInputManager.GetAxisRaw("Mouse Y");
+        float xRotationGamepad = -CrossPlatformInputManager.GetAxisRaw("Joy Y");
+        float xRotationGamepadNormalized = Mathf.Abs(xRotationGamepad);
+        float xProperRotation;
+        float xOffset = 0f;
+        
+        if (xRotationGamepadNormalized <= 1.0f && xRotationGamepadNormalized > gamepadDeadzone) {
+            print("Processing X Joystick");
+            xProperRotation = xRotationGamepad;
+            xOffset = xProperRotation * gamepadSensitivity;
+        } else {
+            print("Processing X Mouse");
+            xProperRotation = xRotationMouse;
+            xOffset = xProperRotation * mouseSensitivity;
+        }
 
-        mainCamera.transform.Rotate(
-            xOffset,
-            0f,
-            0f
-        );
+        xOffset *= Time.deltaTime;
+        Vector3 offsetRotation = new Vector3(xOffset, 0f, 0f);
+        mainCamera.transform.Rotate(offsetRotation);
     }
 
     private void ClampLookUpAndDownRotation() {
@@ -83,12 +96,25 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     private void ProcessLeftAndRightRotation() {
         // Move Player Y rot for left and right
-        float yRot = CrossPlatformInputManager.GetAxisRaw("Mouse X");
-        float yOffset = yRot * sensitivity * Time.deltaTime;
+        float yRotationMouse = CrossPlatformInputManager.GetAxisRaw("Mouse X");
+        float yRotationGamepad = CrossPlatformInputManager.GetAxisRaw("Joy X");
+        float yRotationGamepadNormalized = Mathf.Abs(yRotationGamepad);
+        float yProperRotation;
+        float yOffset = 0f;
 
-        Vector3 rotateByOffset = new Vector3(0f, yOffset, 0f);
+        if(yRotationGamepadNormalized <= 1.0f && yRotationGamepadNormalized > gamepadDeadzone) {
+            print("Processing Y Joystick");
+            yProperRotation = yRotationGamepad;
+            yOffset = yProperRotation * gamepadSensitivity;
+        } else {
+            print("Processing Y Mouse");
+            yProperRotation = yRotationMouse;
+            yOffset = yProperRotation * mouseSensitivity;
+        }
 
-        playerBody.Rotate(rotateByOffset);
+        yOffset *= Time.deltaTime;
+        Vector3 offsetRotation = new Vector3(0f, yOffset, 0f);
+
+        playerBody.Rotate(offsetRotation);
     }
-    
 }
