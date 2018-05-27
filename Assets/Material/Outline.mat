@@ -19,6 +19,6 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Floats:
-    - _Outline: 0.03
+    - _Outline: 0.5
     m_Colors:
     - _OutlineColor: {r: 1, g: 0.64840233, b: 0, a: 1}

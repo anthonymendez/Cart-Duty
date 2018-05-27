@@ -7,6 +7,7 @@ public class Cart : MonoBehaviour {
     [SerializeField] Material outline;
 
     public Cart cartInFront, cartBehind;
+
     private bool outlined;
 
 	// Use this for initialization

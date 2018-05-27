@@ -5,26 +5,13 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 public class FPSPlayerMovement : MonoBehaviour {
 
-    // todo fix camera jitteryness when near 270f or 90f
-
     [Range(1f, 1000f)][SerializeField] float speed = 20f;
     [Range(1f, 100f)] [SerializeField] float sensitivity = 20f;
-    [SerializeField] Material outline;
+    [SerializeField] Transform playerBody;
+    [SerializeField] CartController playerHands;
 
     Camera mainCamera;
     Rigidbody playerRigidBody;
-    bool grabButtonDown, releaseButtonDown;
-    Vector3 screenCenter;
-    Ray playerLookDirection;
-    RaycastHit hitCart;
-    [Tooltip("In Meters")][SerializeField] float maxDistanceGrab = 2f;
-    [Tooltip("Tag")][SerializeField] String cartLayerName = "Carts";
-    int layerMask;
-    bool isLookingAtCart;
-    bool isHoldingCart;
-    Cart cartInHands;
-    Transform cartLastLookedAt;
-    Rigidbody cartRigidBody;
 
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -32,15 +19,14 @@ public class FPSPlayerMovement : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        mainCamera = GetComponentInChildren<Camera>();
+        mainCamera = FindObjectOfType<Camera>();
         playerRigidBody = GetComponent<Rigidbody>();
-	}
+    }
 	
 	// Update is called once per frame
 	void Update () {
         ProcessTranslation();
         ProcessRotation();
-        ProcessGrabCart();
 	}
 
     private void ProcessTranslation() {
@@ -52,7 +38,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         float zThrow = CrossPlatformInputManager.GetAxis("Vertical");
         float zOffset = zThrow * speed * Time.deltaTime;
 
-        transform.Translate(
+        playerBody.Translate(
             xOffset,
             0f,
             zOffset
@@ -100,55 +86,9 @@ public class FPSPlayerMovement : MonoBehaviour {
         float yRot = CrossPlatformInputManager.GetAxisRaw("Mouse X");
         float yOffset = yRot * sensitivity * Time.deltaTime;
 
-        transform.Rotate(
-            0f,
-            yOffset,
-            0f
-        );
+        Vector3 rotateByOffset = new Vector3(0f, yOffset, 0f);
+
+        playerBody.Rotate(rotateByOffset);
     }
-
-    private void ProcessGrabCart() {
-        grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
-        releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
-
-        HandleRaycasting();
-    }
-
-    private void HandleRaycasting() {
-        screenCenter = new Vector3(0.5f, 0.5f, 0f);
-        playerLookDirection = mainCamera.ViewportPointToRay(screenCenter);
-        maxDistanceGrab = 1f;
-        layerMask = LayerMask.GetMask(cartLayerName);
-        isLookingAtCart = Physics.Raycast(playerLookDirection, out hitCart, maxDistanceGrab, layerMask);
-        Debug.DrawLine(playerLookDirection.origin, hitCart.point);
-
-        if (isLookingAtCart) {
-            HandleCartControls();
-            cartLastLookedAt.GetComponent<Cart>().ActivateOutline();
-        } else {
-            if(cartLastLookedAt != null)
-                cartLastLookedAt.GetComponent<Cart>().DeactivateOutline();
-        }
-    }
-
-    private void HandleCartControls() {
-        cartLastLookedAt = hitCart.transform;
-        cartRigidBody = cartLastLookedAt.GetComponent<Rigidbody>();
-
-        bool isFallenOver = (cartLastLookedAt.localEulerAngles.x >= 45 || cartLastLookedAt.localEulerAngles.x <= -45) || (cartLastLookedAt.localEulerAngles.z >= 45 || cartLastLookedAt.localEulerAngles.z <= -45);
-        bool isLookingAtHandlebars = hitCart.collider.CompareTag("Handlebar");
-
-        if (grabButtonDown) {
-            cartInHands = cartLastLookedAt.GetComponent<Cart>();
-            isHoldingCart = true;
-
-            if (isFallenOver) {
-                // Press R to rotate X and Z back to 0 deg
-            } else if (isLookingAtHandlebars) {
-
-            }
-        } else if (releaseButtonDown) {
-            isHoldingCart = false;
-        }
-    }
+    
 }
