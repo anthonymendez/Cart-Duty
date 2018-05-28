@@ -7,7 +7,7 @@ public class CartController : MonoBehaviour {
 
     [Tooltip("In Meters")] [SerializeField] float maxDistanceGrab = 1f;
     [Tooltip("In Meters")] [SerializeField] float distanceWhenGrabbed = 1f;
-    [Tooltip("In Degrees, best set to -90f deg")] [SerializeField] float rotateCartAround = -90f;
+    [Tooltip("In Degrees, best set to 180f deg")] [SerializeField] float rotateCartAround = 180f;
     [Tooltip("LayerMask Name of Carts")] [SerializeField] string cartLayerName = "Carts";
     [SerializeField] Transform playerBody;
 
@@ -109,7 +109,7 @@ public class CartController : MonoBehaviour {
             // Press R to rotate X and Z back to 0 deg
             PickUpCart();
         } else if (isLookingAtHandlebars) {
-            GrabCart();
+            GrabCartHandlebars();
         }
 
         cartInHands.GetComponent<Cart>().DeactivateOutline();
@@ -123,7 +123,7 @@ public class CartController : MonoBehaviour {
         AddCartMassToPlayer();
     }
 
-    private void GrabCart() {
+    private void GrabCartHandlebars() {
         print("Grabbing Cart");
         cartInHands.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
         cartInHands.rotation = Quaternion.Euler(
