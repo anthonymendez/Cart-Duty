@@ -45,6 +45,12 @@ public class CartController : MonoBehaviour {
         HandleCartControls();
         ApplyCartForces();
         ClampCartVelocity();
+
+        //This will print what the angles are reporting to be
+        //print(cartLastLookedAt.eulerAngles);
+
+        //This will tell you if you're looking at the handlebars or not
+        print("Looking at Handlebars --> " + isLookingAtHandlebars);
     }
 
     private void ProcessCartControls() {
