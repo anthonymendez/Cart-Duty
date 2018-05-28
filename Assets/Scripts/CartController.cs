@@ -19,13 +19,14 @@ public class CartController : MonoBehaviour {
     int layerMask;
     bool isLookingAtCart;
     bool isHoldingCart;
-    bool isFallenOver;
+    bool isRollable;
     bool isLookingAtHandlebars;
     bool liftingCart;
     float rotateCartAroundYAxis;
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
     Transform cartLastLookedAt;
+    Cart cartLastLookedAtCart;
     FPSPlayerMovement playerBodyFPS;
 
     // Use this for initialization
@@ -70,6 +71,7 @@ public class CartController : MonoBehaviour {
 
         if (isLookingAtCart) {
             cartLastLookedAt = hitCart.transform;
+            cartLastLookedAtCart = cartLastLookedAt.GetComponent<Cart>();
             if(!isHoldingCart)
                 cartLastLookedAt.GetComponent<Cart>().ActivateOutline();
         } else if (cartLastLookedAt != null) {
@@ -79,11 +81,11 @@ public class CartController : MonoBehaviour {
 
     private void HandleCartControls() {
         if (cartLastLookedAt != null) {
-            isFallenOver = (cartLastLookedAt.eulerAngles.x >= 45 || cartLastLookedAt.eulerAngles.x <= -45) || (cartLastLookedAt.eulerAngles.z >= 45 || cartLastLookedAt.eulerAngles.z <= -45);
+            isRollable = cartLastLookedAtCart.IsRollable();
             if (isLookingAtCart)
                 isLookingAtHandlebars = hitCart.collider.CompareTag("Handlebar");
         } else {
-            isFallenOver = false;
+            isRollable = false;
             isLookingAtHandlebars = false;
         }
 
@@ -102,8 +104,8 @@ public class CartController : MonoBehaviour {
         cartInHands = cartLastLookedAt;
         cartInHandsRigidBody = cartInHands.GetComponentInChildren<Rigidbody>();
         isHoldingCart = true;
-        print(!liftingCart + " && " + (isFallenOver + " || " + !isLookingAtHandlebars));
-        if ( !liftingCart && (isFallenOver || !isLookingAtHandlebars) ) {
+        print(!liftingCart + " && " + (isRollable + " || " + !isLookingAtHandlebars));
+        if ( !liftingCart && (isRollable || !isLookingAtHandlebars) ) {
             // Press R to rotate X and Z back to 0 deg
             PickUpCart();
         } else if (isLookingAtHandlebars) {

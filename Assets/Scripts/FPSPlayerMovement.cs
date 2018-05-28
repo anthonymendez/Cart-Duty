@@ -15,9 +15,7 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     Camera mainCamera;
     Rigidbody playerRigidBody;
-
     private Vector3 forceToApply;
-
     Vector3 upAndDownRotation;
 
     public Vector3 GetForceToApply() {

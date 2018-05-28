@@ -38,7 +38,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4626422458782184}
   - component: {fileID: 146179014902835632}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4817131428032412}
   - component: {fileID: 146469127438339246}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,7 +70,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4499826799534158}
   - component: {fileID: 146925678538494136}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4600096675172658}
   - component: {fileID: 146443473040267934}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +102,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4702596224913508}
   - component: {fileID: 23375876496768892}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Wheels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -277,8 +277,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1023929882417474}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.78, y: -0.01, z: 4.76}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 4.668, y: 1, z: 7.877}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_Children:
   - {fileID: 4400622000683386}
@@ -287,7 +287,7 @@ Transform:
   - {fileID: 4702596224913508}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!23 &23074743727855082
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -474,8 +474,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2.415113, y: 2.489378, z: 2.917217}
-  m_Center: {x: -0.189945, y: 0, z: -0.5726266}
+  m_Size: {x: 2.0121763, y: 2.489378, z: 2.917217}
+  m_Center: {x: 0.011524214, y: 0, z: -0.5726266}
 --- !u!65 &65729983237703944
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -486,8 +486,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.092875056, y: 2.0357559, z: 0.18922995}
-  m_Center: {x: -1.3322469, y: -0.00000015685185, z: 0.7522447}
+  m_Size: {x: 0.092875, y: 2.0357563, z: 0.18923}
+  m_Center: {x: -1.332246, y: 0, z: 0.7522451}
 --- !u!65 &65931361071538128
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -530,6 +530,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 2100000, guid: cce517da6abc11c4c82899f949197fd8, type: 2}
+  cartWheels:
+  - {fileID: 146443473040267934}
+  - {fileID: 146179014902835632}
+  - {fileID: 146925678538494136}
+  - {fileID: 146469127438339246}
   cartInFront: {fileID: 0}
   cartBehind: {fileID: 0}
 --- !u!146 &146179014902835632
@@ -541,8 +546,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.15
   m_SuspensionSpring:
-    spring: 35000
-    damper: 4500
+    spring: 100000
+    damper: 2000
     targetPosition: 0.5
   m_SuspensionDistance: 0.3
   m_ForceAppPointDistance: 0
@@ -570,8 +575,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.15
   m_SuspensionSpring:
-    spring: 35000
-    damper: 4500
+    spring: 100000
+    damper: 2000
     targetPosition: 0.5
   m_SuspensionDistance: 0.3
   m_ForceAppPointDistance: 0
@@ -599,8 +604,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.15
   m_SuspensionSpring:
-    spring: 35000
-    damper: 4500
+    spring: 100000
+    damper: 2000
     targetPosition: 0.5
   m_SuspensionDistance: 0.3
   m_ForceAppPointDistance: 0
@@ -628,8 +633,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.15
   m_SuspensionSpring:
-    spring: 35000
-    damper: 4500
+    spring: 100000
+    damper: 2000
     targetPosition: 0.5
   m_SuspensionDistance: 0.3
   m_ForceAppPointDistance: 0

@@ -1,21 +1,44 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Cart : MonoBehaviour {
 
     [SerializeField] Material outline;
+    [SerializeField] List<WheelCollider> cartWheels;
 
     public Cart cartInFront, cartBehind;
 
     private bool outlined;
+    private bool isRollable;
 
 	// Use this for initialization
 	void Start () {
         outlined = false;
+        isRollable = false;
 	}
 
-    public bool hasOutline() {
+    void FixedUpdate() {
+        CheckIfRollable();
+    }
+
+    private void CheckIfRollable() {
+        int wheelsNotTouchingGround = 0;
+
+        foreach (WheelCollider cartWheel in cartWheels) {
+            if (!cartWheel.isGrounded)
+                wheelsNotTouchingGround++;
+        }
+
+        isRollable = (wheelsNotTouchingGround >= 2);
+    }
+
+    public bool IsRollable() {
+        return isRollable;
+    }
+
+    public bool HasOutline() {
         return outlined;
     }
 
