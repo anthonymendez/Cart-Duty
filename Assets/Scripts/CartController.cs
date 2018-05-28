@@ -147,19 +147,24 @@ public class CartController : MonoBehaviour {
             playerBody.eulerAngles.y + rotateCartAround,
             playerBody.eulerAngles.z
         );
+        AddCartMassToPlayer();
     }
 
     private void ReleaseCart() {
         isHoldingCart = false;
-        grabbingCartHandlebars = false;
-        if (liftingCart) {
-            liftingCart = false;
+
+        if (liftingCart || grabbingCartHandlebars) {
             RemoveCartMassFromPlayer();
         }
-        
+
+        liftingCart = false;
+        grabbingCartHandlebars = false;
+
         cartInHands.parent = null;
         cartInHands = null;
         cartInHandsRigidBody = null;
+        cartInHandsCart = null;
+
         print("Releasing cart");
     }
 
@@ -179,7 +184,7 @@ public class CartController : MonoBehaviour {
         if(cartInHandsRigidBody != null) {
             if (liftingCart) {
                 LiftCart();
-            } else {
+            } else if (grabbingCartHandlebars) {
                 PushCart();
             }
         }
