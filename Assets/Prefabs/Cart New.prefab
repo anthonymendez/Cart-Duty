@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 54194899220746490}
   - component: {fileID: 114520880868199422}
   m_Layer: 0
-  m_Name: Cart Ant Edit
+  m_Name: Cart New
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -278,7 +278,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1023929882417474}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 4.668, y: 1, z: 7.877}
+  m_LocalPosition: {x: 3.173, y: 1, z: 6.153}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_Children:
   - {fileID: 4400622000683386}
@@ -530,11 +530,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outline: {fileID: 2100000, guid: cce517da6abc11c4c82899f949197fd8, type: 2}
+  wheelsToBeNotRollable: 2
+  forceDivider: 4
   cartWheels:
   - {fileID: 146443473040267934}
   - {fileID: 146179014902835632}
   - {fileID: 146925678538494136}
   - {fileID: 146469127438339246}
+  minTurnAngle: 0
+  maxTurnAngle: 90
   cartInFront: {fileID: 0}
   cartBehind: {fileID: 0}
 --- !u!146 &146179014902835632
@@ -558,7 +562,7 @@ WheelCollider:
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
     m_AsymptoteValue: 0.5
-    m_Stiffness: 1
+    m_Stiffness: 0.5
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
     m_ExtremumValue: 1
@@ -587,7 +591,7 @@ WheelCollider:
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
     m_AsymptoteValue: 0.5
-    m_Stiffness: 1
+    m_Stiffness: 0.5
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
     m_ExtremumValue: 1
@@ -616,7 +620,7 @@ WheelCollider:
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
     m_AsymptoteValue: 0.5
-    m_Stiffness: 1
+    m_Stiffness: 0.5
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
     m_ExtremumValue: 1
@@ -645,7 +649,7 @@ WheelCollider:
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
     m_AsymptoteValue: 0.5
-    m_Stiffness: 1
+    m_Stiffness: 0.5
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
     m_ExtremumValue: 1

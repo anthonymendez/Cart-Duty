@@ -5,9 +5,13 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 public class CartController : MonoBehaviour {
 
+    [Header("Player Grab Settings")]
     [Tooltip("In Meters")] [SerializeField] float maxDistanceGrab = 1f;
     [Tooltip("In Meters")] [SerializeField] float distanceWhenGrabbed = 1f;
-    [Tooltip("In Degrees, best set to 180f deg")] [SerializeField] float rotateCartAround = 180f;
+    [Tooltip("Offset for rotation when we grab the cart")] [SerializeField] float rotateCartAround = 180f;
+    [Tooltip("How many degree ticks do we rotate the cart when we're lifting it.")] [SerializeField] float degreesToRotateCartWhenLifted = 20f;
+
+    [Header("Other")]
     [Tooltip("LayerMask Name of Carts")] [SerializeField] string cartLayerName = "Carts";
     [SerializeField] Transform playerBody;
 
@@ -22,12 +26,22 @@ public class CartController : MonoBehaviour {
     bool isRollable;
     bool isLookingAtHandlebars;
     bool liftingCart;
+    bool grabbingCartHandlebars;
     float rotateCartAroundYAxis;
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
+    Cart cartInHandsCart;
     Transform cartLastLookedAt;
     Cart cartLastLookedAtCart;
     FPSPlayerMovement playerBodyFPS;
+
+    public bool IsLiftingCart() {
+        return liftingCart;
+    }
+
+    public bool IsGrabbingCartHandlebars() {
+        return grabbingCartHandlebars;
+    }
 
     // Use this for initialization
     void Start () {
@@ -73,9 +87,9 @@ public class CartController : MonoBehaviour {
             cartLastLookedAt = hitCart.transform;
             cartLastLookedAtCart = cartLastLookedAt.GetComponent<Cart>();
             if(!isHoldingCart)
-                cartLastLookedAt.GetComponent<Cart>().ActivateOutline();
+                cartLastLookedAtCart.ActivateOutline();
         } else if (cartLastLookedAt != null) {
-            cartLastLookedAt.GetComponent<Cart>().DeactivateOutline();
+            cartLastLookedAtCart.DeactivateOutline();
         }
     }
 
@@ -103,6 +117,7 @@ public class CartController : MonoBehaviour {
     private void HandleCartGrabbing() {
         cartInHands = cartLastLookedAt;
         cartInHandsRigidBody = cartInHands.GetComponentInChildren<Rigidbody>();
+        cartInHandsCart = cartInHands.GetComponentInChildren<Cart>();
         isHoldingCart = true;
         print(!liftingCart + " && " + (isRollable + " || " + !isLookingAtHandlebars));
         if ( !liftingCart && (isRollable || !isLookingAtHandlebars) ) {
@@ -112,7 +127,7 @@ public class CartController : MonoBehaviour {
             GrabCartHandlebars();
         }
 
-        cartInHands.GetComponent<Cart>().DeactivateOutline();
+        cartLastLookedAtCart.DeactivateOutline();
     }
 
     private void PickUpCart() {
@@ -125,6 +140,7 @@ public class CartController : MonoBehaviour {
 
     private void GrabCartHandlebars() {
         print("Grabbing Cart");
+        grabbingCartHandlebars = true;
         cartInHands.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
         cartInHands.rotation = Quaternion.Euler(
             playerBody.eulerAngles.x,
@@ -135,6 +151,7 @@ public class CartController : MonoBehaviour {
 
     private void ReleaseCart() {
         isHoldingCart = false;
+        grabbingCartHandlebars = false;
         if (liftingCart) {
             liftingCart = false;
             RemoveCartMassFromPlayer();
@@ -160,19 +177,17 @@ public class CartController : MonoBehaviour {
 
     private void ApplyCartForces() {
         if(cartInHandsRigidBody != null) {
-            Vector3 cartForceToApply = playerBodyFPS.GetForceToApply();
-            Vector3 playerLookDirection = playerLookRay.direction;
-            Vector3 forceToApply = new Vector3(
-                cartForceToApply.x * playerLookDirection.x,
-                cartForceToApply.y * playerLookDirection.y,
-                cartForceToApply.z * playerLookDirection.z
-            );
-            cartInHandsRigidBody.AddRelativeForce(forceToApply);
-
             if (liftingCart) {
                 LiftCart();
+            } else {
+                PushCart();
             }
         }
+    }
+
+    private void PushCart() {
+        Vector3 playerPushForce = -playerBodyFPS.GetForceToApply();
+        cartInHandsCart.CalculateTorqueAndAngleOnWheels(playerPushForce);
     }
 
     private void LiftCart() {
@@ -180,7 +195,7 @@ public class CartController : MonoBehaviour {
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
         cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
-        cartInHands.Rotate(0f, rotateCartAroundYAxis * 20f, 0f);
+        cartInHands.Rotate(0f, rotateCartAroundYAxis * degreesToRotateCartWhenLifted, 0f);
     }
 
     private void ClampCartVelocity() {

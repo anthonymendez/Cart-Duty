@@ -5,17 +5,23 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 public class FPSPlayerMovement : MonoBehaviour {
 
-    [Tooltip("In N")][SerializeField] float movementForce = 200f;
-    [SerializeField] float playerVelocityLimit = 10f;
-    [Range(1f, 100f)] [SerializeField] float mouseSensitivity = 20f;
-    [Range(1f, 1000f)] [SerializeField] float gamepadSensitivity = 100f;
+    [Header("Player Movement")]
+    [Tooltip("Movement force applied on player. In Newtons")][SerializeField] float movementForce = 200f;
+    [Tooltip("Limit of the player's velocity magnitude. In Meters/Second")] [SerializeField] float playerVelocityLimit = 10f;
+
+    [Header("Camera Rotation")]
+    [Tooltip("Multiplier for how sensitive the mouse looking is")][Range(1f, 100f)] [SerializeField] float mouseSensitivity = 20f;
+    [Tooltip("Multiplier for how sensitive the gamepad looking is")] [Range(1f, 1000f)] [SerializeField] float gamepadSensitivity = 100f;
     [Tooltip("Set the value the same as it is in the InputManager")][SerializeField] float gamepadDeadzone = 0.05f;
+
+    [Header("Other")]
     [SerializeField] Transform playerBody;
     [SerializeField] CartController playerHands;
 
     Camera mainCamera;
     Rigidbody playerRigidBody;
     private Vector3 forceToApply;
+    private Vector3 forceOnPlayer;
     Vector3 upAndDownRotation;
 
     public Vector3 GetForceToApply() {
@@ -34,8 +40,8 @@ public class FPSPlayerMovement : MonoBehaviour {
 	void Start () {
         mainCamera = FindObjectOfType<Camera>();
         playerRigidBody = GetComponentInChildren<Rigidbody>();
-
         forceToApply = Vector3.zero;
+        forceOnPlayer = Vector3.zero;
     }
 	
 	// Update is called once per frame
@@ -66,10 +72,15 @@ public class FPSPlayerMovement : MonoBehaviour {
         float zOffset = zThrow * movementForce * Time.deltaTime;
 
         forceToApply = new Vector3(xOffset, 0f, zOffset);
+
+        if (playerHands.IsGrabbingCartHandlebars())
+            forceOnPlayer = new Vector3(0f, 0f, zOffset);
+        else
+            forceOnPlayer = forceToApply;
     }
 
     private void ApplyTranslationForce() {
-        playerRigidBody.AddRelativeForce(forceToApply);
+        playerRigidBody.AddRelativeForce(forceOnPlayer);
     }
     
     private void ClampVelocity() {
