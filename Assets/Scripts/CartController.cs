@@ -51,6 +51,9 @@ public class CartController : MonoBehaviour {
 
         //This will tell you if you're looking at the handlebars or not
         print("Looking at Handlebars --> " + isLookingAtHandlebars);
+
+        //This will tell you what the value of cartLastLookedAt is
+        print("Cart Last Looked At -- > " + cartLastLookedAt);
     }
 
     private void ProcessCartControls() {
