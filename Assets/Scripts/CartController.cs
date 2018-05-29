@@ -28,11 +28,15 @@ public class CartController : MonoBehaviour {
     bool liftingCart;
     bool grabbingCartHandlebars;
     float rotateCartAroundYAxis;
+
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
     Cart cartInHandsCart;
+
     Transform cartLastLookedAt;
     Cart cartLastLookedAtCart;
+
+    Rigidbody playerBodyRigidBody;
     FPSPlayerMovement playerBodyFPS;
 
     public bool IsLiftingCart() {
@@ -48,6 +52,7 @@ public class CartController : MonoBehaviour {
         mainCamera = FindObjectOfType<Camera>();
         screenCenter = new Vector3(0.5f, 0.5f, 0f);
         playerBodyFPS = playerBody.GetComponentInParent<FPSPlayerMovement>();
+        playerBodyRigidBody = playerBody.GetComponentInChildren<Rigidbody>();
     }
 	
 	// Update is called once per frame
@@ -134,7 +139,8 @@ public class CartController : MonoBehaviour {
         print("Lifting Cart");
         liftingCart = true;
         cartInHands.parent = playerBody.transform;
-        cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.25f);
+        cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
+        cartInHandsRigidBody.useGravity = false;
         AddCartMassToPlayer();
     }
 
@@ -159,6 +165,8 @@ public class CartController : MonoBehaviour {
 
         liftingCart = false;
         grabbingCartHandlebars = false;
+
+        cartInHandsRigidBody.useGravity = true;
 
         cartInHands.parent = null;
         cartInHands = null;
@@ -196,7 +204,7 @@ public class CartController : MonoBehaviour {
     }
 
     private void LiftCart() {
-        cartInHands.position = (playerBody.position + playerLookRay.direction + mainCamera.transform.forward);
+        cartInHandsRigidBody.MovePosition(playerBody.position + playerLookRay.direction);
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
         cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
