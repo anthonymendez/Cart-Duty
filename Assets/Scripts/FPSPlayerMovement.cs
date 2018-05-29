@@ -6,7 +6,7 @@ using UnityStandardAssets.CrossPlatformInput;
 public class FPSPlayerMovement : MonoBehaviour {
 
     [Header("Player Movement")]
-    [Tooltip("Movement force applied on player. In Newtons")][SerializeField] float movementForce = 200f;
+    [Tooltip("Movement force applied on player. Never exact, but will be around. In Newtons")][SerializeField] float movementForce = 50f;
     [Tooltip("Limit of the player's velocity magnitude. In Meters/Second")] [SerializeField] float playerVelocityLimit = 10f;
 
     [Header("Camera Rotation")]
@@ -77,11 +77,10 @@ public class FPSPlayerMovement : MonoBehaviour {
             forceOnPlayer = new Vector3(0f, 0f, zOffset);
         else
             forceOnPlayer = forceToApply;
-        
     }
 
     private void ApplyTranslationForce() {
-        playerRigidBody.AddRelativeForce(forceOnPlayer, ForceMode.Impulse);
+        playerRigidBody.AddRelativeForce(forceOnPlayer, ForceMode.VelocityChange);
     }
     
     private void ClampVelocity() {
