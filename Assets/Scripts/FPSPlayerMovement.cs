@@ -77,10 +77,11 @@ public class FPSPlayerMovement : MonoBehaviour {
             forceOnPlayer = new Vector3(0f, 0f, zOffset);
         else
             forceOnPlayer = forceToApply;
+        
     }
 
     private void ApplyTranslationForce() {
-        playerRigidBody.AddRelativeForce(forceOnPlayer);
+        playerRigidBody.AddRelativeForce(forceOnPlayer, ForceMode.Impulse);
     }
     
     private void ClampVelocity() {
