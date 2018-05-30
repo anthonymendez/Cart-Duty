@@ -58,7 +58,7 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     // Apply Camera movement here
     void LateUpdate() {
-        ClampLookUpAndDownRotation2();
+        ClampLookUpAndDownRotation();
         ApplyUpAndDownCameraRotation();
     }
 
@@ -117,25 +117,6 @@ public class FPSPlayerMovement : MonoBehaviour {
     }
 
     private void ClampLookUpAndDownRotation() {
-        // Clamp X between 0 and 90 deg
-        // or Clamp between 270f and 360f
-        // When rotation goes below 0, it wraps around to 360f
-        float xRotRaw = mainCamera.transform.localEulerAngles.x;
-        float xRotFix;
-        if (xRotRaw <= 90) {
-            xRotFix = Mathf.Clamp(xRotRaw, 0f, 90f);
-        } else {
-            xRotFix = Mathf.Clamp(xRotRaw, 270f, 360f);
-        }
-
-        mainCamera.transform.localRotation = Quaternion.Euler(
-            xRotFix,
-            mainCamera.transform.localRotation.y,
-            mainCamera.transform.localRotation.z
-        );
-    }
-
-    private void ClampLookUpAndDownRotation2() {
         // Clamp X between 0 and 90 deg
         // or Clamp between 270f and 360f
         // When rotation goes below 0, it wraps around to 360f
