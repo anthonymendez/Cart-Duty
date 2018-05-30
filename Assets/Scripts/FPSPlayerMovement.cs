@@ -58,8 +58,8 @@ public class FPSPlayerMovement : MonoBehaviour {
 
     // Apply Camera movement here
     void LateUpdate() {
+        ClampLookUpAndDownRotation2();
         ApplyUpAndDownCameraRotation();
-        ClampLookUpAndDownRotation();
     }
 
     private void ProcessTranslation() {
@@ -116,10 +116,6 @@ public class FPSPlayerMovement : MonoBehaviour {
         upAndDownRotation = new Vector3(xOffset, 0f, 0f);
     }
 
-    private void ApplyUpAndDownCameraRotation() {
-        mainCamera.transform.Rotate(upAndDownRotation);
-    }
-
     private void ClampLookUpAndDownRotation() {
         // Clamp X between 0 and 90 deg
         // or Clamp between 270f and 360f
@@ -131,13 +127,41 @@ public class FPSPlayerMovement : MonoBehaviour {
         } else {
             xRotFix = Mathf.Clamp(xRotRaw, 270f, 360f);
         }
-        
+
         mainCamera.transform.localRotation = Quaternion.Euler(
             xRotFix,
             mainCamera.transform.localRotation.y,
             mainCamera.transform.localRotation.z
         );
     }
+
+    private void ClampLookUpAndDownRotation2() {
+        // Clamp X between 0 and 90 deg
+        // or Clamp between 270f and 360f
+        // When rotation goes below 0, it wraps around to 360f
+        float xRotOrig = mainCamera.transform.localEulerAngles.x;
+        float xRotOffset = upAndDownRotation.x;
+        float xRotRaw = xRotOrig + xRotOffset;
+        float xRotFix = xRotRaw;
+        float xRotFinal;
+
+        while(xRotFix > 180f) {
+            xRotFix -= 360f;
+        }
+        while(xRotFix < -180f) {
+            xRotFix += 360f;
+        }
+
+        xRotFinal = Mathf.Clamp(xRotFix, -90f, 90f);
+
+        upAndDownRotation.x = xRotFinal - mainCamera.transform.localEulerAngles.x;
+    }
+
+    private void ApplyUpAndDownCameraRotation() {
+        mainCamera.transform.Rotate(upAndDownRotation);
+    }
+
+    
 
     private void ProcessLeftAndRightRotation() {
         // Move Player Y rot for left and right
