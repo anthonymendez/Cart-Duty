@@ -275,7 +275,7 @@ Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: pb_Mesh15018
+  m_Name: pb_Mesh7078
   serializedVersion: 8
   m_SubMeshes:
   - serializedVersion: 2
@@ -421,7 +421,7 @@ Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: pb_Mesh15042
+  m_Name: pb_Mesh7130
   serializedVersion: 8
   m_SubMeshes:
   - serializedVersion: 2
@@ -585,7 +585,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -7
+      value: -4.66
       objectReference: {fileID: 0}
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalPosition.z
@@ -610,6 +610,21 @@ Prefab:
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114918434617161970, guid: 246caf46db331e8478e1bd0d1d103abb,
+        type: 2}
+      propertyPath: movementForce
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 54920916315551728, guid: 246caf46db331e8478e1bd0d1d103abb,
+        type: 2}
+      propertyPath: m_Constraints
+      value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 114918434617161970, guid: 246caf46db331e8478e1bd0d1d103abb,
+        type: 2}
+      propertyPath: playerVelocityLimit
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
@@ -652,6 +667,16 @@ Prefab:
     - target: {fileID: 4963510243678342, guid: c6fca986eb4065d4ebbbf654257492b1, type: 2}
       propertyPath: m_RootOrder
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 54194899220746490, guid: c6fca986eb4065d4ebbbf654257492b1,
+        type: 2}
+      propertyPath: m_Interpolate
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114520880868199422, guid: c6fca986eb4065d4ebbbf654257492b1,
+        type: 2}
+      propertyPath: forceMultiplier
+      value: 40
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: c6fca986eb4065d4ebbbf654257492b1, type: 2}

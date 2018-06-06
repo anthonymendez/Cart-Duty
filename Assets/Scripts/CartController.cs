@@ -28,7 +28,7 @@ public class CartController : MonoBehaviour {
     bool liftingCart;
     bool grabbingCartHandlebars;
     float rotateCartAroundYAxis;
-
+    Transform playerHands;
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
     Cart cartInHandsCart;
@@ -53,6 +53,7 @@ public class CartController : MonoBehaviour {
         screenCenter = new Vector3(0.5f, 0.5f, 0f);
         playerBodyFPS = playerBody.GetComponentInParent<FPSPlayerMovement>();
         playerBodyRigidBody = playerBody.GetComponentInChildren<Rigidbody>();
+        playerHands = transform;
     }
 	
 	// Update is called once per frame
@@ -138,15 +139,17 @@ public class CartController : MonoBehaviour {
     private void PickUpCart() {
         print("Lifting Cart");
         liftingCart = true;
-        cartInHands.parent = playerBody.transform;
+        cartInHands.parent = playerHands.transform;
         cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
         cartInHandsRigidBody.useGravity = false;
+        cartInHandsRigidBody.isKinematic = true;
         AddCartMassToPlayer();
     }
 
     private void GrabCartHandlebars() {
         print("Grabbing Cart");
         grabbingCartHandlebars = true;
+        cartInHands.parent = transform;
         cartInHands.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
         cartInHands.rotation = Quaternion.Euler(
             playerBody.eulerAngles.x,
@@ -167,7 +170,7 @@ public class CartController : MonoBehaviour {
         grabbingCartHandlebars = false;
 
         cartInHandsRigidBody.useGravity = true;
-
+        cartInHandsRigidBody.isKinematic = false;
         cartInHands.parent = null;
         cartInHands = null;
         cartInHandsRigidBody = null;
@@ -199,14 +202,28 @@ public class CartController : MonoBehaviour {
     }
 
     private void PushCart() {
-        Vector3 playerPushForce = -playerBodyFPS.GetForceToApply();
-        cartInHandsCart.CalculateTorqueAndAngleOnWheels(playerPushForce);
+        //Vector3 playerPushForce = -playerBodyFPS.GetForceToApply();
+        //cartInHandsCart.CalculateTorqueAndAngleOnWheels(playerPushForce);
+        Vector3 oldCartPostion = cartInHands.position;
+        Vector3 newCartPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 2.0f));
+        Vector3 positionDifference = (newCartPosition - oldCartPostion) * Time.deltaTime;
+        newCartPosition += positionDifference;
+
+        Vector3 newCartRotation = playerBody.rotation.eulerAngles;
+        newCartPosition.y = cartInHands.position.y;
+        newCartRotation.y -= 180f;
+
+        cartInHandsRigidBody.MovePosition(newCartPosition);
+        cartInHandsRigidBody.MoveRotation(Quaternion.Euler(newCartRotation));
     }
 
     private void LiftCart() {
-        cartInHandsRigidBody.MovePosition(playerBody.position + playerLookRay.direction);
+        Vector3 newPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 1.5f));
+        cartInHandsRigidBody.MovePosition(newPosition);
+
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
+
         cartInHands.eulerAngles = new Vector3(0f, cartInHands.eulerAngles.y, 0f);
         cartInHands.Rotate(0f, rotateCartAroundYAxis * degreesToRotateCartWhenLifted, 0f);
     }

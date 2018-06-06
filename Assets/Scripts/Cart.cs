@@ -9,20 +9,25 @@ public class Cart : MonoBehaviour {
 
     [Header("Wheel Settings")]
     [Tooltip("How many wheels need to be off the ground to be considered non-rollable")] [SerializeField] int wheelsToBeNotRollable = 2;
-    [Tooltip("How much we decrease the force on each wheel. Recommended 4")] [SerializeField] float forceDivider = 4.0f;
+    [Tooltip("How much we multiply the force by. Recommended 4")] [SerializeField] float forceMultiplier = 4.0f;
     [Tooltip("Important, Front Wheels must be the first two elements!")][SerializeField] List<WheelCollider> cartWheels;
     [Tooltip("In Degrees, recommended setting minimum to 0 degrees.")] [SerializeField] float minTurnAngle = 0f, maxTurnAngle = 30f;
 
     [Header("Other")]
     public Cart cartInFront, cartBehind;
+    [Tooltip("Do not change unless you know what you're doing.")] [SerializeField] GameObject playerBody;
 
+    private Rigidbody thisRigidBody;
+    private Collider thisCollider;
     private bool outlined;
     private bool isRollable;
-
+    
 	// Use this for initialization
 	void Start () {
         outlined = false;
         isRollable = false;
+        thisRigidBody = GetComponent<Rigidbody>();
+        thisCollider = GetComponent<Collider>();
 	}
 
     void FixedUpdate() {
@@ -55,7 +60,7 @@ public class Cart : MonoBehaviour {
         // Horizontal is X Axis - Turning
         // Forward/Back is Z Axis - Pushing
         float pushingForce = forceFromPlayer.z;
-        float torqueOnEachWheel = pushingForce / forceDivider;
+        float torqueOnEachWheel = pushingForce * forceMultiplier;
         float turningForce = forceFromPlayer.x;
         float turningRadians = Mathf.Atan(turningForce / pushingForce);
         float turningDegrees = Mathf.Rad2Deg * turningRadians;
@@ -72,11 +77,8 @@ public class Cart : MonoBehaviour {
     private void ApplyTorqueAndAngleOnWheels(float torqueOnEachWheel, float turnAngle) {
         foreach (WheelCollider cartWheel in cartWheels) {
             cartWheel.motorTorque = torqueOnEachWheel;
+            cartWheel.steerAngle = turnAngle;
         }
-
-        cartWheels[0].steerAngle = turnAngle;
-        cartWheels[1].steerAngle = turnAngle;
-        print(cartWheels[0].steerAngle);
     }
 
     private void CheckIfRollable() {
@@ -115,6 +117,29 @@ public class Cart : MonoBehaviour {
             }
 
             cartPieceRenderer.materials = matsOfCartPieceList.ToArray();
+        }
+    }
+
+    // todo figure out why this isn't working
+    void OnCollisionEnter(Collision otherCollision) {
+        GameObject colliderGameObject = otherCollision.gameObject;
+        bool colliderIsPlayerBody = colliderGameObject.CompareTag("PlayerBody");
+        bool isKinematic = thisRigidBody.isKinematic;
+
+        if (colliderIsPlayerBody && isKinematic) {
+            Physics.IgnoreCollision(otherCollision.collider, thisCollider);
+            print("Ignoring collision");
+        }
+    }
+
+    void OnTriggerEnter(Collider otherCollider) {
+        GameObject colliderGameObject = otherCollider.gameObject;
+        bool colliderIsPlayerBody = colliderGameObject.CompareTag("PlayerBody");
+        bool isKinematic = thisRigidBody.isKinematic;
+
+        if (colliderIsPlayerBody && isKinematic) {
+            Physics.IgnoreCollision(otherCollider, thisCollider);
+            print("Ignoring collision");
         }
     }
 }

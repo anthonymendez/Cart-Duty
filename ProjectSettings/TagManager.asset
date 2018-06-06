@@ -7,6 +7,7 @@ TagManager:
   - CartBody
   - B2HB
   - Handlebar
+  - PlayerBody
   layers:
   - Default
   - TransparentFX
