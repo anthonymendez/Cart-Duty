@@ -531,7 +531,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 2100000, guid: cce517da6abc11c4c82899f949197fd8, type: 2}
   wheelsToBeNotRollable: 2
-  forceDivider: 4
+  forceMultiplier: 4
   cartWheels:
   - {fileID: 146443473040267934}
   - {fileID: 146179014902835632}
@@ -541,6 +541,7 @@ MonoBehaviour:
   maxTurnAngle: 90
   cartInFront: {fileID: 0}
   cartBehind: {fileID: 0}
+  playerBody: {fileID: 1628899330952558, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
 --- !u!146 &146179014902835632
 WheelCollider:
   m_ObjectHideFlags: 1

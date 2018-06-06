@@ -1381,15 +1381,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 12
+      value: 1.81
       objectReference: {fileID: 0}
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -7
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 10
+      value: -1.3
       objectReference: {fileID: 0}
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_LocalRotation.x
@@ -1410,25 +1410,6 @@ Prefab:
     - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
       propertyPath: m_RootOrder
       value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114918434617161970, guid: 246caf46db331e8478e1bd0d1d103abb,
-        type: 2}
-      propertyPath: movementForce
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 54920916315551728, guid: 246caf46db331e8478e1bd0d1d103abb,
-        type: 2}
-      propertyPath: m_Constraints
-      value: 112
-      objectReference: {fileID: 0}
-    - target: {fileID: 114918434617161970, guid: 246caf46db331e8478e1bd0d1d103abb,
-        type: 2}
-      propertyPath: playerVelocityLimit
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4330303248445692, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 164
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 246caf46db331e8478e1bd0d1d103abb, type: 2}
@@ -1972,7 +1953,7 @@ Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: pb_Mesh16432
+  m_Name: pb_Mesh32796
   serializedVersion: 8
   m_SubMeshes:
   - serializedVersion: 2
@@ -2123,6 +2104,11 @@ Mesh:
   m_BakedConvexCollisionMesh: 
   m_BakedTriangleCollisionMesh: 
   m_MeshOptimized: 0
+--- !u!1 &1146389273 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1628899330952558, guid: 246caf46db331e8478e1bd0d1d103abb,
+    type: 2}
+  m_PrefabInternal: {fileID: 828975616}
 --- !u!43 &1370434625
 Mesh:
   m_ObjectHideFlags: 0
@@ -3662,6 +3648,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114520880868199422, guid: c6fca986eb4065d4ebbbf654257492b1,
+        type: 2}
+      propertyPath: playerBody
+      value: 
+      objectReference: {fileID: 1146389273}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: c6fca986eb4065d4ebbbf654257492b1, type: 2}
   m_IsPrefabParent: 0
