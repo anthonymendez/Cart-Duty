@@ -11,6 +11,9 @@ public class CartController : MonoBehaviour {
     [Tooltip("Offset for rotation when we grab the cart")] [SerializeField] float rotateCartAround = 180f;
     [Tooltip("How many degree ticks do we rotate the cart when we're lifting it.")] [SerializeField] float degreesToRotateCartWhenLifted = 20f;
 
+    [Header("Throwing Settings")]
+    [Tooltip("In Newtons")] [SerializeField] float throwingForce = 500f;
+
     [Header("Other")]
     [Tooltip("LayerMask Name of Carts")] [SerializeField] string cartLayerName = "Carts";
     [SerializeField] Transform playerBody;
@@ -59,6 +62,7 @@ public class CartController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         ProcessCartControls();
+        MovePlayerHands();
 	}
 
     void FixedUpdate() {
@@ -66,21 +70,19 @@ public class CartController : MonoBehaviour {
         HandleCartControls();
         ApplyCartForces();
         ClampCartVelocity();
-
-        //This will print what the angles are reporting to be
-        //print(cartLastLookedAt.eulerAngles);
-
-        //This will tell you if you're looking at the handlebars or not
-        print("Looking at Handlebars --> " + isLookingAtHandlebars);
-
-        //This will tell you what the value of cartLastLookedAt is
-        print("Cart Last Looked At -- > " + cartLastLookedAt);
     }
 
     private void ProcessCartControls() {
         grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
         releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
         rotateCartAroundYAxis = CrossPlatformInputManager.GetAxisRaw("Mouse ScrollWheel");
+    }
+
+    private void MovePlayerHands() {
+        Vector3 camPosition = mainCamera.transform.position;
+        Vector3 direction = playerLookRay.direction;
+        Vector3 newPosition = camPosition + direction;
+        transform.position = newPosition;
     }
 
     private void HandleRaycasting() {
@@ -129,8 +131,10 @@ public class CartController : MonoBehaviour {
         if ( !liftingCart && (isRollable || !isLookingAtHandlebars) ) {
             // Press R to rotate X and Z back to 0 deg
             PickUpCart();
+            AddCartMassToPlayer();
         } else if (isLookingAtHandlebars) {
             GrabCartHandlebars();
+            AddCartMassToPlayer();
         }
 
         cartLastLookedAtCart.DeactivateOutline();
@@ -139,11 +143,11 @@ public class CartController : MonoBehaviour {
     private void PickUpCart() {
         print("Lifting Cart");
         liftingCart = true;
+        cartInHandsRigidBody.useGravity = false;
+        cartInHandsRigidBody.detectCollisions = true;
+        cartInHandsRigidBody.isKinematic = false;
         cartInHands.parent = playerHands.transform;
         cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
-        cartInHandsRigidBody.useGravity = false;
-        cartInHandsRigidBody.isKinematic = true;
-        AddCartMassToPlayer();
     }
 
     private void GrabCartHandlebars() {
@@ -156,7 +160,6 @@ public class CartController : MonoBehaviour {
             playerBody.eulerAngles.y + rotateCartAround,
             playerBody.eulerAngles.z
         );
-        AddCartMassToPlayer();
     }
 
     private void ReleaseCart() {
@@ -168,8 +171,8 @@ public class CartController : MonoBehaviour {
 
         liftingCart = false;
         grabbingCartHandlebars = false;
-
         cartInHandsRigidBody.useGravity = true;
+        cartInHandsRigidBody.detectCollisions = true;
         cartInHandsRigidBody.isKinematic = false;
         cartInHands.parent = null;
         cartInHands = null;
@@ -202,8 +205,6 @@ public class CartController : MonoBehaviour {
     }
 
     private void PushCart() {
-        //Vector3 playerPushForce = -playerBodyFPS.GetForceToApply();
-        //cartInHandsCart.CalculateTorqueAndAngleOnWheels(playerPushForce);
         Vector3 oldCartPostion = cartInHands.position;
         Vector3 newCartPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 2.0f));
         Vector3 positionDifference = (newCartPosition - oldCartPostion) * Time.deltaTime;
@@ -218,8 +219,14 @@ public class CartController : MonoBehaviour {
     }
 
     private void LiftCart() {
-        Vector3 newPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 1.5f));
-        cartInHandsRigidBody.MovePosition(newPosition);
+        //Vector3 newPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 1.5f));
+        //cartInHandsRigidBody.MovePosition(newPosition * Time.fixedDeltaTime);
+
+        //Vector3 liftForce = -Physics.gravity;
+        //liftForce *= cartInHandsRigidBody.mass;
+        //cartInHandsRigidBody.AddForce(liftForce);
+
+        
 
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
