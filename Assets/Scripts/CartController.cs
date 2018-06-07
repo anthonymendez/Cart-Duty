@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+
 public class CartController : MonoBehaviour {
 
     [Header("Player Grab Settings")]
@@ -10,6 +11,13 @@ public class CartController : MonoBehaviour {
     [Tooltip("In Meters")] [SerializeField] float distanceWhenGrabbed = 1f;
     [Tooltip("Offset for rotation when we grab the cart")] [SerializeField] float rotateCartAround = 180f;
     [Tooltip("How many degree ticks do we rotate the cart when we're lifting it.")] [SerializeField] float degreesToRotateCartWhenLifted = 20f;
+
+    [Header("Cart Pull-Guide Settings")]
+    [Tooltip("Do we use Mathf.Lerp to determine the dampening towards the center.")] [SerializeField] bool useLerpDampening = true;
+        [Tooltip("Only works when useLerpDampening is disabled. How much we effect the cart's pull force towards the push guide.")]
+        [SerializeField]
+        float dampeningFactor = 1f;
+    [Tooltip("How much we effect the cart's pull force towards the push guide.")] [SerializeField] float dampeningDivisor = 1f;
 
     [Header("Throwing Settings")]
     [Tooltip("In Newtons")] [SerializeField] float throwingForce = 500f;
@@ -35,12 +43,11 @@ public class CartController : MonoBehaviour {
     Transform cartInHands;
     Rigidbody cartInHandsRigidBody;
     Cart cartInHandsCart;
-
     Transform cartLastLookedAt;
     Cart cartLastLookedAtCart;
-
     Rigidbody playerBodyRigidBody;
     FPSPlayerMovement playerBodyFPS;
+    Transform liftGuide, pushGuide;
 
     public bool IsLiftingCart() {
         return liftingCart;
@@ -57,12 +64,14 @@ public class CartController : MonoBehaviour {
         playerBodyFPS = playerBody.GetComponentInParent<FPSPlayerMovement>();
         playerBodyRigidBody = playerBody.GetComponentInChildren<Rigidbody>();
         playerHands = transform;
+        liftGuide = GetComponentsInChildren<Transform>()[1];
+        pushGuide = GetComponentsInChildren<Transform>()[2];
     }
 	
 	// Update is called once per frame
 	void Update () {
         ProcessCartControls();
-        MovePlayerHands();
+        MoveLiftGuide();
 	}
 
     void FixedUpdate() {
@@ -78,11 +87,11 @@ public class CartController : MonoBehaviour {
         rotateCartAroundYAxis = CrossPlatformInputManager.GetAxisRaw("Mouse ScrollWheel");
     }
 
-    private void MovePlayerHands() {
+    private void MoveLiftGuide() {
         Vector3 camPosition = mainCamera.transform.position;
         Vector3 direction = playerLookRay.direction;
         Vector3 newPosition = camPosition + direction;
-        transform.position = newPosition;
+        liftGuide.position = newPosition;
     }
 
     private void HandleRaycasting() {
@@ -146,14 +155,15 @@ public class CartController : MonoBehaviour {
         cartInHandsRigidBody.useGravity = false;
         cartInHandsRigidBody.detectCollisions = true;
         cartInHandsRigidBody.isKinematic = false;
-        cartInHands.parent = playerHands.transform;
-        cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
+        cartInHands.parent = liftGuide;
+        cartInHands.position = liftGuide.position;
+        //cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
     }
 
     private void GrabCartHandlebars() {
         print("Grabbing Cart");
         grabbingCartHandlebars = true;
-        cartInHands.parent = transform;
+        cartInHands.parent = pushGuide;
         cartInHands.position = playerBody.position + (playerBody.forward * distanceWhenGrabbed);
         cartInHands.rotation = Quaternion.Euler(
             playerBody.eulerAngles.x,
@@ -195,7 +205,7 @@ public class CartController : MonoBehaviour {
     }
 
     private void ApplyCartForces() {
-        if(cartInHandsRigidBody != null) {
+        if(cartInHandsRigidBody != null /*&& isRollable*/) {
             if (liftingCart) {
                 LiftCart();
             } else if (grabbingCartHandlebars) {
@@ -205,29 +215,41 @@ public class CartController : MonoBehaviour {
     }
 
     private void PushCart() {
-        Vector3 oldCartPostion = cartInHands.position;
-        Vector3 newCartPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 2.0f));
-        Vector3 positionDifference = (newCartPosition - oldCartPostion) * Time.deltaTime;
-        newCartPosition += positionDifference;
+        Vector3 pushGuidePosition = pushGuide.position;
+        Vector3 cartPosition = cartInHands.position;
+        Vector3 cartToPushGuideHeading = pushGuidePosition - cartPosition;
+        cartToPushGuideHeading.y = 0f;
+        float lerpDampening = Mathf.Lerp(cartPosition.magnitude, pushGuidePosition.magnitude, cartToPushGuideHeading.magnitude * Time.fixedDeltaTime);
+        Vector3 forceOnCart = cartToPushGuideHeading / dampeningDivisor;
+        if (useLerpDampening) {
+            forceOnCart *= lerpDampening;
+        } else {
+            forceOnCart *= dampeningFactor;
+        }
 
         Vector3 newCartRotation = playerBody.rotation.eulerAngles;
-        newCartPosition.y = cartInHands.position.y;
         newCartRotation.y -= 180f;
 
-        cartInHandsRigidBody.MovePosition(newCartPosition);
+        bool isForceOnCartValid = (
+            forceOnCart.x != Mathf.Infinity && forceOnCart.x != Mathf.NegativeInfinity &&
+            forceOnCart.y != Mathf.Infinity && forceOnCart.y != Mathf.NegativeInfinity &&
+            forceOnCart.z != Mathf.Infinity && forceOnCart.z != Mathf.NegativeInfinity
+            );
+        if (isForceOnCartValid) {
+            cartInHandsRigidBody.AddForce(forceOnCart, ForceMode.VelocityChange);
+            Debug.Log("forceOnCart is valid");
+        } else {
+            Debug.LogError("forceOnCart has Inf/NegInf value: " + forceOnCart);
+            Debug.LogError("cartToPushGuideHeading: " + cartToPushGuideHeading);
+            Debug.LogError("lerpDampening: " + lerpDampening);
+            Debug.LogError("dampeningFactor: " + dampeningFactor);
+            Debug.LogError("dampeningDivisor: " + dampeningDivisor);
+        }
+
         cartInHandsRigidBody.MoveRotation(Quaternion.Euler(newCartRotation));
     }
 
     private void LiftCart() {
-        //Vector3 newPosition = (playerBodyRigidBody.position + (playerLookRay.direction * 1.5f));
-        //cartInHandsRigidBody.MovePosition(newPosition * Time.fixedDeltaTime);
-
-        //Vector3 liftForce = -Physics.gravity;
-        //liftForce *= cartInHandsRigidBody.mass;
-        //cartInHandsRigidBody.AddForce(liftForce);
-
-        
-
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
 
