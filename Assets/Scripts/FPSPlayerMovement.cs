@@ -23,6 +23,7 @@ public class FPSPlayerMovement : MonoBehaviour {
     private Vector3 forceToApply;
     private Vector3 forceOnPlayer;
     Vector3 upAndDownRotation;
+    bool isTranslationButtonDown;
 
     public Vector3 GetForceToApply() {
         return forceToApply;
@@ -42,6 +43,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         playerRigidBody = GetComponentInChildren<Rigidbody>();
         forceToApply = Vector3.zero;
         forceOnPlayer = Vector3.zero;
+        isTranslationButtonDown = false
     }
 	
 	// Update is called once per frame
@@ -63,31 +65,41 @@ public class FPSPlayerMovement : MonoBehaviour {
     }
 
     private void ProcessTranslation() {
-        // Get X and Y throw, factor in the speed and time since the last frame,
-        // and calculate the force to apply on player
         float xThrow = CrossPlatformInputManager.GetAxis("Horizontal");
-        float xOffset = xThrow * movementForce * Time.deltaTime;
-
         float zThrow = CrossPlatformInputManager.GetAxis("Vertical");
-        float zOffset = zThrow * movementForce * Time.deltaTime;
+        isTranslationButtonDown = (xThrow != Mathf.Epsilon) || (zThrow != Mathf.Epsilon);
 
-        forceToApply = new Vector3(xOffset, 0f, zOffset);
+        // If we're not translating, no need to process any of this then
+        if (isTranslationButtonDown) {
+            // Get X and Y throw, factor in the speed and time since the last frame,
+            // and calculate the force to apply on player
+            float xOffset = xThrow * movementForce * Time.deltaTime;
+            float zOffset = zThrow * movementForce * Time.deltaTime;
 
-        if (playerHands.IsGrabbingCartHandlebars())
-            forceOnPlayer = new Vector3(0f, 0f, zOffset);
-        else
-            forceOnPlayer = forceToApply;
+            forceToApply = new Vector3(xOffset, 0f, zOffset);
+
+            if (playerHands.IsGrabbingCartHandlebars())
+                forceOnPlayer = new Vector3(0f, 0f, zOffset);
+            else
+                forceOnPlayer = forceToApply;
+        }
     }
 
     private void ApplyTranslationForce() {
         playerRigidBody.AddRelativeForce(forceOnPlayer, ForceMode.VelocityChange);
     }
-    
-    private void ClampVelocity() {
-        float playerVelocityMagnitude = playerRigidBody.velocity.magnitude;
 
-        if (playerVelocityMagnitude > playerVelocityLimit) {
-            playerRigidBody.velocity = Vector3.ClampMagnitude(playerRigidBody.velocity, playerVelocityLimit);
+    private void ClampVelocity() {
+        // If we're not pressing the move buttons, then we don't clamp our speed.
+        if(isTranslationButtonDown) {
+            float playerVelocityMagnitude = playerRigidBody.velocity.magnitude;
+            // We keep the same Y velocity as before in case we're falling
+            float playerVelocityY = playerRigidBody.velocity.y;
+
+            if (playerVelocityMagnitude > playerVelocityLimit) {
+                playerRigidBody.velocity = Vector3.ClampMagnitude(playerRigidBody.velocity, playerVelocityLimit);
+                playerRigidBody.velocity = new Vector3(playerRigidBody.velocity.x, playerVelocityY, playerRigidBody.velocity.z);
+            }
         }
     }
 
