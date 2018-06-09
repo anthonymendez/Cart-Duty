@@ -14,7 +14,8 @@ public class Cart : MonoBehaviour {
     [Tooltip("In Degrees, recommended setting minimum to 0 degrees.")] [SerializeField] float minTurnAngle = 0f, maxTurnAngle = 30f;
 
     [Header("Other")]
-    public Cart cartInFront, cartBehind;
+    public Cart cartInFront;
+    public Cart cartBehind;
     [Tooltip("Do not change unless you know what you're doing.")] [SerializeField] GameObject playerBody;
 
     private Rigidbody thisRigidBody;
