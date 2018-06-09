@@ -43,7 +43,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         playerRigidBody = GetComponentInChildren<Rigidbody>();
         forceToApply = Vector3.zero;
         forceOnPlayer = Vector3.zero;
-        isTranslationButtonDown = false
+        isTranslationButtonDown = false;
     }
 	
 	// Update is called once per frame
