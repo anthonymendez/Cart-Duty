@@ -16,19 +16,19 @@ public class CartController : MonoBehaviour {
     [Tooltip("Do we use Mathf.Lerp to determine the dampening towards the center.")] [SerializeField] bool useLerpDampeningForMovement = true;
     [Tooltip("Only works when useLerpDampeningForMovement is disabled. How much we effect the cart's pull force towards the push guide.")]
         [SerializeField]
-        float dampeningMovementFactor = 1f;
+        float mDampeningFactor = 1f;
     [Tooltip("How much we effect the cart's pull force towards the push guide.")]
         [SerializeField]
-        float dampeningMovementDivisor = 1f;
+        float mDampeningDivisor = 1f;
 
     [Header("Cart Rotation-Guide Settings")]
     [Tooltip("Do we use Mathf.Lerp to determine the dampening for rotation back to the player's rigidbody.")] [SerializeField] bool useLerpDampeningForRotation = true;
     [Tooltip("Only works when useLerpDampeningForRotation is disabled. How much we effect the cart's torque towards the player's rigidbody's rotation.")]
         [SerializeField]
-        float dampeningRotatingDivisor = 1f;
+        float rDampeningDivisor = 1f;
     [Tooltip("How much we effect the cart's torque towards the player's rigidbody's rotation.")]
         [SerializeField]
-        float dampeningRotatingFactor = 1f;
+        float rDampeningFactor = 1f;
 
     [Header("Throwing Settings")]
     [Tooltip("In Newtons")] [SerializeField] float throwingForce = 500f;
@@ -224,7 +224,7 @@ public class CartController : MonoBehaviour {
             }
         }
     }
-
+    
     private void PushCart() {
 
         /* Cart Movement */
@@ -232,12 +232,14 @@ public class CartController : MonoBehaviour {
         Vector3 cartPosition = cartInHands.position;
         Vector3 cartToPushGuideHeading = pushGuidePosition - cartPosition;
         cartToPushGuideHeading.y = 0f;
-        float lerpDampening = Mathf.Lerp(cartPosition.magnitude, pushGuidePosition.magnitude, cartToPushGuideHeading.magnitude * Time.fixedDeltaTime);
-        Vector3 forceOnCart = cartToPushGuideHeading / dampeningMovementDivisor;
+        float lerpDampening = Mathf.Lerp(cartPosition.magnitude,
+                                            pushGuidePosition.magnitude,
+                                            cartInHandsRigidBody.velocity.magnitude * Time.fixedDeltaTime);
+        Vector3 forceOnCart = cartToPushGuideHeading / mDampeningDivisor;
         if (useLerpDampeningForMovement) {
             forceOnCart *= lerpDampening;
         } else {
-            forceOnCart *= dampeningMovementFactor;
+            forceOnCart *= mDampeningFactor;
         }
 
         bool isForceOnCartValid = (
@@ -250,29 +252,16 @@ public class CartController : MonoBehaviour {
             Debug.Log("forceOnCart is valid");
         } else {
             Debug.LogError("forceOnCart has Inf/NegInf value: " + forceOnCart);
-            Debug.LogError("cartToPushGuideHeading: " + cartToPushGuideHeading);
-            Debug.LogError("lerpDampening: " + lerpDampening);
-            Debug.LogError("dampeningFactor: " + dampeningMovementFactor);
-            Debug.LogError("dampeningDivisor: " + dampeningMovementDivisor);
+            Debug.LogError("dampeningFactor: " + mDampeningFactor);
+            Debug.LogError("dampeningDivisor: " + mDampeningDivisor);
         }
 
         /* Cart Rotation */
 
-        //Vector3 newCartRotation = playerBody.rotation.eulerAngles;
-        //newCartRotation.y -= 180f;
-        //cartInHandsRigidBody.MoveRotation(Quaternion.Euler(newCartRotation));
-
-        //Vector3 playerBodyEulerAngles = playerBody.eulerAngles;
-        //Vector3 cartEulerAngles = cartInHands.eulerAngles;
-        //Vector3 cartToPlayerBodyEulerAngles = Quaternion.FromToRotation(cartEulerAngles,playerBodyEulerAngles).eulerAngles;
-        //lerpDampening = Mathf.Lerp(cartEulerAngles.magnitude, playerBodyEulerAngles.magnitude, cartToPlayerBodyEulerAngles.magnitude * Time.fixedDeltaTime);
-        //Vector3 rotationOnCart = cartToPlayerBodyEulerAngles / dampeningRotatingDivisor;
-        //if (useLerpDampeningForRotation) {
-        //    rotationOnCart *= lerpDampening;
-        //} else {
-        //    rotationOnCart *= dampeningRotatingFactor;
-        //}
-        
+        //todo remove and replace with something better
+        //Vector3 directionToGo = playerBody.eulerAngles;
+        //directionToGo.y -= 180f;
+        //cartInHandsRigidBody.MoveRotation(Quaternion.Euler(directionToGo));
 
         /*  Cool flippy doo thing with the cart
          * Quaternion playerBodyEulerAngles = playerBody.rotation;
