@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+
+// <summary>
+// Handles player movement and looking controls
+// </summary>
 public class FPSPlayerMovement : MonoBehaviour {
 
     [Header("Player Movement")]
@@ -25,45 +29,66 @@ public class FPSPlayerMovement : MonoBehaviour {
     Vector3 upAndDownRotation;
     bool isTranslationButtonDown;
 
+    // <summary>
+    // Returns the force being applied onto the player
+    // </summary>
     public Vector3 GetForceToApply() {
         return forceToApply;
     }
 
+    // <summary>
+    // Returns the velocity limit of the player
+    // </summary>
     public float GetPlayerVelocityLimit() {
         return playerVelocityLimit;
     }
 
+    // <summary>
+    // Locks the cursor to the center of the screen
+    // </summary>
     void Awake() {
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-	// Use this for initialization
-	void Start () {
+    // <summary>
+    // Assigns an initial value to some variables
+    // </summary>
+    void Start () {
         mainCamera = FindObjectOfType<Camera>();
         playerRigidBody = GetComponentInChildren<Rigidbody>();
         forceToApply = Vector3.zero;
         forceOnPlayer = Vector3.zero;
         isTranslationButtonDown = false;
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // <summary>
+    // Track the given inputs from the player.
+    // </summary>
+    void Update () {
         ProcessTranslation();
         ProcessRotation();
 	}
 
-    // Apply Physics here
+    // <summary>
+    // Applies any Physics based interactions.
+    // </summary>
     void FixedUpdate() {
         ApplyTranslationForce();
         ClampVelocity();
     }
-
-    // Apply Camera movement here
+    
+    // <summary>
+    // Applies can camera rotation changes.
+    // </summary>
     void LateUpdate() {
         ClampLookUpAndDownRotation();
         ApplyUpAndDownCameraRotation();
     }
 
+    // <summary>
+    // Tracks the movement input from the player, and computes into a 
+    // force that will be applied on the player and later used on the cart.
+    // </summary>
     private void ProcessTranslation() {
         float xThrow = CrossPlatformInputManager.GetAxis("Horizontal");
         float zThrow = CrossPlatformInputManager.GetAxis("Vertical");
@@ -78,6 +103,8 @@ public class FPSPlayerMovement : MonoBehaviour {
 
             forceToApply = new Vector3(xOffset, 0f, zOffset);
 
+            // If the player is grabbing a cart, we won't apply their horizontal movement,
+            // because the carts do not have 4 wheel steering
             if (playerHands.IsGrabbingCartHandlebars())
                 forceOnPlayer = new Vector3(0f, 0f, zOffset);
             else
@@ -85,10 +112,17 @@ public class FPSPlayerMovement : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Apply the force calculated in ProcessTranslation to the player.
+    // </summary>
     private void ApplyTranslationForce() {
         playerRigidBody.AddRelativeForce(forceOnPlayer, ForceMode.VelocityChange);
     }
 
+    // <summary>
+    // Clamp the player velocity to the set velocity limit.
+    // Does not apply to the Y axis.
+    // </summary>
     private void ClampVelocity() {
         // If we're not pressing the move buttons, then we don't clamp our speed.
         if(isTranslationButtonDown) {
@@ -103,11 +137,19 @@ public class FPSPlayerMovement : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Initiate rotation process for the player.
+    // AKA: Calculating where the player is looking
+    // </summary>
     private void ProcessRotation() {
         ProcessLookUpAndDownRotation();
         ProcessLeftAndRightRotation();
     }
 
+    // <summary>
+    // We track the inputs of the player, determine whether it's the gamepad or mouse,
+    // and compute a value for how much the player is rotating their view.
+    // </summary>
     private void ProcessLookUpAndDownRotation() {
         // Move mainCamera X rot for up and down
         float xRotationMouse = -CrossPlatformInputManager.GetAxisRaw("Mouse Y");
@@ -116,6 +158,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         float xProperRotation;
         float xOffset = 0f;
         
+        // Determine whether or not we're using a gamepad or mouse. 
         if (xRotationGamepadNormalized <= 1.0f && xRotationGamepadNormalized > gamepadDeadzone) {
             xProperRotation = xRotationGamepad;
             xOffset = xProperRotation * gamepadSensitivity;
@@ -128,6 +171,10 @@ public class FPSPlayerMovement : MonoBehaviour {
         upAndDownRotation = new Vector3(xOffset, 0f, 0f);
     }
 
+    // <summary>
+    // Prevents the player from looking up more than +90 degrees, 
+    // or looking down more than -90 degrees.
+    // </summary>
     private void ClampLookUpAndDownRotation() {
         // Clamp X between 0 and 90 deg
         // or Clamp between 270f and 360f
@@ -138,6 +185,9 @@ public class FPSPlayerMovement : MonoBehaviour {
         float xRotFix = xRotRaw;
         float xRotFinal;
 
+        // Because of the way Unity does it's EulerAngles,
+        // we have to change the rotation to be 
+        // between -180 deg and 180 deg
         while(xRotFix > 180f) {
             xRotFix -= 360f;
         }
@@ -150,12 +200,18 @@ public class FPSPlayerMovement : MonoBehaviour {
         upAndDownRotation.x = xRotFinal - mainCamera.transform.localEulerAngles.x;
     }
 
+    // <summary>
+    // Apply the rotation value for looking up and down.
+    // </summary>
     private void ApplyUpAndDownCameraRotation() {
         mainCamera.transform.Rotate(upAndDownRotation);
     }
 
-    
-
+    // <summary>
+    // Track the input for the player looking left and right, determine
+    // whether the player is using a gamepad or mouse, and calculate a
+    // rotation value and apply it.
+    // </summary>
     private void ProcessLeftAndRightRotation() {
         // Move Player Y rot for left and right
         float yRotationMouse = CrossPlatformInputManager.GetAxisRaw("Mouse X");
@@ -164,6 +220,7 @@ public class FPSPlayerMovement : MonoBehaviour {
         float yProperRotation;
         float yOffset = 0f;
 
+        // Determine whether we're using a gamepad or mouse
         if(yRotationGamepadNormalized <= 1.0f && yRotationGamepadNormalized > gamepadDeadzone) {
             yProperRotation = yRotationGamepad;
             yOffset = yProperRotation * gamepadSensitivity;

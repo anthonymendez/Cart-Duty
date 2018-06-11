@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
+// <summary>
+// Controls the player handling on the cart
+// </summary>
 public class CartController : MonoBehaviour {
 
     [Header("Player Grab Settings")]
@@ -60,15 +63,23 @@ public class CartController : MonoBehaviour {
     FPSPlayerMovement playerBodyFPS;
     Transform liftGuide, pushGuide;
 
+    // <summary>
+    // Returns if the player is lifting the cart.
+    // </summary>
     public bool IsLiftingCart() {
         return liftingCart;
     }
 
+    // <summary>
+    // Returns if the player is grabbing the cart by the handlebars.
+    // </summary>
     public bool IsGrabbingCartHandlebars() {
         return grabbingCartHandlebars;
     }
 
-    // Use this for initialization
+    // <summary>
+    // Initializes the value of some variables.
+    // </summary>
     void Start () {
         mainCamera = FindObjectOfType<Camera>();
         screenCenter = new Vector3(0.5f, 0.5f, 0f);
@@ -78,13 +89,18 @@ public class CartController : MonoBehaviour {
         liftGuide = GetComponentsInChildren<Transform>()[1];
         pushGuide = GetComponentsInChildren<Transform>()[2];
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // <summary>
+    // Process inputs and move the lift guide game object
+    // </summary>
+    void Update () {
         ProcessCartControls();
         MoveLiftGuide();
 	}
 
+    // <summary>
+    // Handle Physics based interactions.
+    // </summary>
     void FixedUpdate() {
         HandleRaycasting();
         HandleCartControls();
@@ -92,12 +108,19 @@ public class CartController : MonoBehaviour {
         ClampCartVelocity();
     }
 
+    // <summary>
+    // Tracks and updates the input variables.
+    // </summary>
     private void ProcessCartControls() {
         grabButtonDown = CrossPlatformInputManager.GetButton("Fire1");
         releaseButtonDown = CrossPlatformInputManager.GetButton("Fire2");
         rotateCartAroundYAxis = CrossPlatformInputManager.GetAxisRaw("Mouse ScrollWheel");
     }
 
+    // <summary>
+    // Moves the lift guide game object based on where the player
+    // is looking.
+    // </summary>
     private void MoveLiftGuide() {
         Vector3 camPosition = mainCamera.transform.position;
         Vector3 direction = playerLookRay.direction;
@@ -105,22 +128,37 @@ public class CartController : MonoBehaviour {
         liftGuide.position = newPosition;
     }
 
+    // <summary>
+    // Cast a ray from the middle of the player's screen and detects whether
+    // the player is looking at a cart or not.
+    // </summary>
     private void HandleRaycasting() {
         playerLookRay = mainCamera.ViewportPointToRay(screenCenter);
         layerMask = LayerMask.GetMask(cartLayerName);
         isLookingAtCart = Physics.Raycast(playerLookRay, out hitCart, maxDistanceGrab, layerMask);
         Debug.DrawLine(playerLookRay.origin, hitCart.point);
-
+        
         if (isLookingAtCart) {
             cartLastLookedAt = hitCart.transform;
             cartLastLookedAtCart = cartLastLookedAt.GetComponent<Cart>();
+            
+            // Activate the outline if the player is looking at cart
+            // it can grab.
             if(!isHoldingCart)
                 cartLastLookedAtCart.ActivateOutline();
+
+            // If we're not looking at a cart but we have looked at cart before,
+            // deactivate it's outline.
         } else if (cartLastLookedAt != null) {
             cartLastLookedAtCart.DeactivateOutline();
         }
     }
 
+    // <summary>
+    // Tracks if there is any change in how the player is
+    // dealing with the cart.
+    // I.E.: If the player is releasing the cart, grabbing, picking up.
+    // </summary>
     private void HandleCartControls() {
         if (cartLastLookedAt != null) {
             isRollable = cartLastLookedAtCart.IsRollable();
@@ -142,6 +180,10 @@ public class CartController : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Handles the case if the player is trying to grab the cart and if they are,
+    // determines if they're picking up the cart or grabbing it by the handlebars.
+    // </summary>
     private void HandleCartGrabbing() {
         cartInHands = cartLastLookedAt;
         cartInHandsRigidBody = cartInHands.GetComponentInChildren<Rigidbody>();
@@ -160,6 +202,9 @@ public class CartController : MonoBehaviour {
         cartLastLookedAtCart.DeactivateOutline();
     }
 
+    // <summary>
+    // Picks up the cart and parents it to the liftguide gameobject.
+    // </summary>
     private void PickUpCart() {
         print("Lifting Cart");
         liftingCart = true;
@@ -168,9 +213,11 @@ public class CartController : MonoBehaviour {
         cartInHandsRigidBody.isKinematic = false;
         cartInHands.parent = liftGuide;
         cartInHands.position = liftGuide.position;
-        //cartInHands.position = playerBody.transform.position + (playerBody.transform.forward * 1.5f);
     }
 
+    // <summary>
+    // Grabs the cart by the handlebars and parents it the pushguide gameobject.
+    // </summary>
     private void GrabCartHandlebars() {
         print("Grabbing Cart");
         grabbingCartHandlebars = true;
@@ -183,6 +230,9 @@ public class CartController : MonoBehaviour {
         );
     }
 
+    // <summary>
+    // Unparents the cart and returns it back to its original physical state.
+    // </summary>
     private void ReleaseCart() {
         isHoldingCart = false;
 
@@ -203,18 +253,28 @@ public class CartController : MonoBehaviour {
         print("Releasing cart");
     }
 
+    // <summary>
+    // Add the mass of the cart to player when they pick it up.
+    // </summary>
     private void AddCartMassToPlayer() {
         Rigidbody playerRigidBody = playerBody.GetComponent<Rigidbody>();
         cartInHandsRigidBody = cartInHands.GetComponent<Rigidbody>();
         playerRigidBody.mass += cartInHandsRigidBody.mass;
     }
 
+    // <summary>
+    // Removes the mass of the cart from the player when the release it.
+    // </summary>
     private void RemoveCartMassFromPlayer() {
         Rigidbody playerRigidBody = playerBody.GetComponent<Rigidbody>();
         cartInHandsRigidBody = cartInHands.GetComponent<Rigidbody>();
         playerRigidBody.mass -= cartInHandsRigidBody.mass;
     }
 
+    // <summary>
+    // Checks if the cart is being lifted or pushed by the player and
+    // applies the appropriate forces or movement.
+    // </summary>
     private void ApplyCartForces() {
         if(cartInHandsRigidBody != null /*&& isRollable*/) {
             if (liftingCart) {
@@ -224,9 +284,11 @@ public class CartController : MonoBehaviour {
             }
         }
     }
-    
-    private void PushCart() {
 
+    // <summary>
+    // Applies the pushing forces to the cart from the player.
+    // </summary>
+    private void PushCart() {
         /* Cart Movement */
         Vector3 pushGuidePosition = pushGuide.position;
         Vector3 cartPosition = cartInHands.position;
@@ -277,6 +339,10 @@ public class CartController : MonoBehaviour {
         */
     }
 
+    // <summary>
+    // Cancels out any velocity of the cart and allows the player to
+    // rotate the cart with the scrollwheel.
+    // </summary>
     private void LiftCart() {
         cartInHandsRigidBody.angularVelocity = Vector3.zero;
         cartInHandsRigidBody.velocity = Vector3.zero;
@@ -285,6 +351,9 @@ public class CartController : MonoBehaviour {
         cartInHands.Rotate(0f, rotateCartAroundYAxis * degreesToRotateCartWhenLifted, 0f);
     }
 
+    // <summary>
+    // Clamp the cart velocity to the velocity limit the player has.
+    // </summary>
     private void ClampCartVelocity() {
         if (cartInHandsRigidBody != null) {
             float cartVelocityMagnitude = cartInHandsRigidBody.velocity.magnitude;

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// <summary>
+// Apply the force calculated in ProcessTranslation to the player.
+// </summary>
 public class Cart : MonoBehaviour {
     [Header("Outline Settings")]
     [SerializeField] Material outline;
@@ -22,27 +25,42 @@ public class Cart : MonoBehaviour {
     private Collider thisCollider;
     private bool outlined;
     private bool isRollable;
-    
-	// Use this for initialization
-	void Start () {
+
+    // <summary>
+    // Initializes values for variables.
+    // </summary>
+    void Start () {
         outlined = false;
         isRollable = false;
         thisRigidBody = GetComponent<Rigidbody>();
         thisCollider = GetComponent<Collider>();
 	}
 
+    // <summary>
+    // Checks if the cart is rollable.
+    // </summary>
     void FixedUpdate() {
         CheckIfRollable();
     }
-    
+
+    // <summary>
+    // Returns if the cart is rollable and 
+    // can be pushed by the player.
+    // </summary>
     public bool IsRollable() {
         return isRollable;
     }
 
+    // <summary>
+    // Returns if the cart is currently outlined.
+    // </summary>
     public bool HasOutline() {
         return outlined;
     }
 
+    // <summary>
+    // Activates the outline shader of the cart.
+    // </summary>
     public void ActivateOutline() {
         if (!outlined) {
             outlined = true;
@@ -50,6 +68,9 @@ public class Cart : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Deactivates the outline shader of the cart.
+    // </summary>
     public void DeactivateOutline() {
         if (outlined) {
             outlined = false;
@@ -57,6 +78,10 @@ public class Cart : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Calculates a force to apply on the cart wheels given a force from the
+    // player and calls a function to apply the force on each wheel.
+    // </summary>
     public void CalculateTorqueAndAngleOnWheels(Vector3 forceFromPlayer) {
         // Horizontal is X Axis - Turning
         // Forward/Back is Z Axis - Pushing
@@ -75,6 +100,9 @@ public class Cart : MonoBehaviour {
         ApplyTorqueAndAngleOnWheels(torqueOnEachWheel, turningDegreesFixed);
     }
 
+    // <summary>
+    // Applies the force calculated on each wheel and applies it.
+    // </summary>
     private void ApplyTorqueAndAngleOnWheels(float torqueOnEachWheel, float turnAngle) {
         foreach (WheelCollider cartWheel in cartWheels) {
             cartWheel.motorTorque = torqueOnEachWheel;
@@ -82,6 +110,10 @@ public class Cart : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Checks the cart if it's rollable by checking how many
+    // wheels are touching the ground.
+    // </summary>
     private void CheckIfRollable() {
         int wheelsNotTouchingGround = 0;
 
@@ -93,6 +125,10 @@ public class Cart : MonoBehaviour {
         isRollable = (wheelsNotTouchingGround >= wheelsToBeNotRollable);
     }
 
+    // <summary>
+    // Goes through each child on the cart and adds the outline material
+    // to the children.
+    // </summary>
     private void AddOutlineToCart() {
         for (int childIndex = 0; childIndex < transform.childCount; childIndex++) {
             Transform cartPiece = transform.GetChild(childIndex);
@@ -104,6 +140,10 @@ public class Cart : MonoBehaviour {
         }
     }
 
+    // <summary>
+    // Goes through each child on the cart and removes the outline material
+    // from the children.
+    // </summary>
     private void RemoveOutlineFromCart() {
         for (int childIndex = 0; childIndex < transform.childCount; childIndex++) {
             Transform cartPiece = transform.GetChild(childIndex);
@@ -118,29 +158,6 @@ public class Cart : MonoBehaviour {
             }
 
             cartPieceRenderer.materials = matsOfCartPieceList.ToArray();
-        }
-    }
-
-    // todo figure out why this isn't working
-    void OnCollisionEnter(Collision otherCollision) {
-        GameObject colliderGameObject = otherCollision.gameObject;
-        bool colliderIsPlayerBody = colliderGameObject.CompareTag("PlayerBody");
-        bool isKinematic = thisRigidBody.isKinematic;
-
-        if (colliderIsPlayerBody && isKinematic) {
-            Physics.IgnoreCollision(otherCollision.collider, thisCollider);
-            print("Ignoring collision");
-        }
-    }
-
-    void OnTriggerEnter(Collider otherCollider) {
-        GameObject colliderGameObject = otherCollider.gameObject;
-        bool colliderIsPlayerBody = colliderGameObject.CompareTag("PlayerBody");
-        bool isKinematic = thisRigidBody.isKinematic;
-
-        if (colliderIsPlayerBody && isKinematic) {
-            Physics.IgnoreCollision(otherCollider, thisCollider);
-            print("Ignoring collision");
         }
     }
 }
